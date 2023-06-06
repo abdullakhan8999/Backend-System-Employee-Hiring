@@ -2,9 +2,16 @@ const Constants = require('../Constants/rolesConstants');
 const models = require('../Models');
 const sendToken = require('../Utils/sendToken');
 const Validator = require('../Validator');
+const { ROLES } = require("../Constants/rolesConstants");
 
 const SignUp = async (req, res, next) => {
    const role = req.params.role;
+   if (!ROLES.includes(role)) {
+      return res.status(401).json({
+         "status": "failure",
+         "message": "Not authorized."
+      });
+   }
    const { email, phone } = req.body;
 
    //validate email

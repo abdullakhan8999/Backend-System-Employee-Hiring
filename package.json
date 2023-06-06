@@ -1,0 +1,31 @@
+{
+  "name": "backend-system-relevel-employee-hiring",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abdullakhan8999/Backend-System-Relevel-Employee-Hiring.git"
+  },
+  "author": "Abdulla",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.0",
+    "validator": "^13.9.0"
+  },
+  "bugs": {
+    "url": "https://github.com/abdullakhan8999/Backend-System-Relevel-Employee-Hiring/issues"
+  },
+  "homepage": "https://github.com/abdullakhan8999/Backend-System-Relevel-Employee-Hiring#readme"
+}

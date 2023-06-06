@@ -5,12 +5,12 @@ const jobApplicationsSchema = mongoose.Schema({
    student_id: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'student'
+      ref: 'students'
    },
    job_id: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'job'
+      ref: 'jobs'
    },
    applicationStatus: {
       type: String,

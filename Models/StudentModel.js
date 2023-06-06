@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const validator = require("validator");
 const bcrypt = require('bcryptjs');
+const Constants = require('../Constants/rolesConstants');
+const jwt = require('jsonwebtoken');
 
 
 const StudentSchema = mongoose.Schema({
@@ -22,7 +24,9 @@ const StudentSchema = mongoose.Schema({
    },
    phone: {
       type: String,
-      default: ''
+      minLength: [8, "Name should be more than 4 characters"],
+      default: '',
+      unique: true
    },
    password: {
       type: String,
@@ -34,7 +38,7 @@ const StudentSchema = mongoose.Schema({
    role: {
       type: String,
       required: true,
-      default: "STUDENT",
+      default: Constants.STUDENT,
    },
    createdAt: {
       type: Date,
@@ -47,12 +51,45 @@ const StudentSchema = mongoose.Schema({
    }
 })
 
-
+// Hashing passwords
 StudentSchema.pre("save", async function (next) {
    if (!this.isModified("password")) {
       next();
    }
    this.password = await bcrypt.hash(this.password, 10);
 })
+
+// Compare password method
+StudentSchema.methods.comparePassword = async function (enterPassword) {
+   return await bcrypt.compare(enterPassword, this.password)
+};
+
+// get token method
+StudentSchema.methods.getJwtToken = function () {
+   return jwt.sign(
+      {
+         id: this._id,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+   );
+};
+
+// Generate reset password token
+StudentSchema.methods.getResetPasswordToken = async function () {
+
+   // Generate reset password token
+   const resetToken = await crypto.randomBytes(20).toString("hex");
+
+   //  reset Password Token
+   this.resetPasswordToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+   this.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+
+   return resetToken
+};
 
 module.exports = mongoose.model("Student", StudentSchema);

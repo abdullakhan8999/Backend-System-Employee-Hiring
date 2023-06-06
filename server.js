@@ -21,7 +21,7 @@ const initAdmin = async () => {
       email: process.env.ADMIN_EMAIL,
       password: process.env.ADMIN_PASSWORD
    }).then((admin) => {
-      console.log("Admin is created", admin.name);
+      console.log("Admin is created", admin);
    }).catch((err) => {
       console.log("Error creating admin", err);
    });

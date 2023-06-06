@@ -16,13 +16,15 @@ const SignUp = async (req, res, next) => {
          message: 'The email is already in use by another account.',
       });
    }
-   const isPhoneExist = await Validator.isPhoneExist(phone);
-   // console.log("isPhoneExist", isPhoneExist);
-   if (isPhoneExist) {
-      return res.status(400).json({
-         status: "failed",
-         message: 'The Phone.No is already in use by another account.',
-      });
+   if (role === Constants.STUDENT) {
+      const isPhoneExist = await Validator.isPhoneExist(phone);
+      // console.log("isPhoneExist", isPhoneExist);
+      if (isPhoneExist) {
+         return res.status(400).json({
+            status: "failed",
+            message: 'The Phone.No is already in use by another account.',
+         });
+      }
    }
 
    if (role === Constants.COMPANY) {
@@ -110,8 +112,34 @@ const login = async (req, res, next) => {
    sendToken(user, 200, res)
 }
 
+const logout = async (req, res, next) => {
+
+   if (req.user) {
+      const cookieName = req.user.role; // Unique cookie name based on user role
+      res.clearCookie(cookieName, {
+         expires: new Date(Date.now()),
+         httpOnly: true,
+      });
+      res.status(200).json({
+         status: "success",
+         data: {},
+      });
+      return;
+   }
+   res.status(500).json({
+      status: "failure",
+      message: "Invalid parameters",
+   });
+};
+
+module.exports = logout;
+
+
+
+
 
 module.exports = {
    SignUp,
    login,
+   logout
 };

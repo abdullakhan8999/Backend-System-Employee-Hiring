@@ -80,7 +80,7 @@ companySchema.methods.comparePassword = async function (enterPassword) {
 companySchema.methods.getJwtToken = function () {
    return jwt.sign(
       {
-         id: this._id,
+         id: this._id, role: this.role
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }

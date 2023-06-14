@@ -14,6 +14,7 @@ const sendToken = async (user, statusCode, res) => {
       res.status(statusCode).cookie(cookieName, token, options).json({
         status: "success",
         token,
+        _id: user._id,
         companyName: user.companyName,
         description: user.description,
         location: user.location,
@@ -26,6 +27,7 @@ const sendToken = async (user, statusCode, res) => {
       res.status(statusCode).cookie(cookieName, token, options).json({
         status: "success",
         token,
+        _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,

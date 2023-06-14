@@ -35,6 +35,14 @@ const adminSchema = mongoose.Schema({
       required: true,
       default: Constants.ADMIN,
    },
+   ticketsCreated: {
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "Ticket"
+   },
+   ticketsAssigned: {
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "Ticket"
+   },
    createdAt: {
       type: Date,
       immutable: true,

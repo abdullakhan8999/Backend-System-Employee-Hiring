@@ -14,12 +14,11 @@ const jobApplicationsSchema = mongoose.Schema({
    },
    applicationStatus: {
       type: String,
-      required: true,
       default: 'pending'
    },
    applications: {
       type: Date,
-      required: true,
+      default: () => { return Date.now(); }
    },
    createdAt: {
       type: Date,

@@ -8,10 +8,13 @@ const SignUp = async (req, res, next) => {
    const role = req.params.role;
    if (!ROLES.includes(role)) {
       return res.status(401).json({
-         "status": "failure",
+         "status": "Failed",
          "message": "Not authorized."
       });
    }
+   //not allowed to create admin
+   if (role === Constants.ADMIN) return res.status(400).json({ message: 'Invalid role' });
+
    const { email, phone } = req.body;
 
    //validate email
@@ -39,7 +42,7 @@ const SignUp = async (req, res, next) => {
       let { error } = await Validator.ValidateSignUp(req.body);
       if (error) {
          return res.status(400).json({
-            status: "failure",
+            status: "Failed",
             message: 'Please enter valid details.' + error
          });
       }
@@ -69,7 +72,7 @@ const SignUp = async (req, res, next) => {
 
       if (error) {
          return res.status(400).json({
-            status: "failure",
+            status: "Failed",
             message: 'Please enter valid details. ' + error
          });
       }
@@ -97,10 +100,16 @@ const SignUp = async (req, res, next) => {
 
 const login = async (req, res, next) => {
    const role = req.params.role;
+   if (!ROLES.includes(role)) {
+      return res.status(401).json({
+         "status": "Failed",
+         "message": "Not authorized."
+      });
+   }
    const { email, password } = req.body;
 
+
    //validate email
-   req.body.role = role;
    const user = await Validator.isEmailExist(email, "+password");
    if (!user) {
       return res.status(400).json({
@@ -108,11 +117,17 @@ const login = async (req, res, next) => {
          message: 'Enter a valid email address.',
       });
    }
+   if (user.role != role) {
+      return res.status(401).json({
+         "status": "Failed",
+         "message": "Not authorized."
+      });
+   }
 
    let isPasswordMatch = await user.comparePassword(password);
    if (!isPasswordMatch) {
       return res.status(401).json({
-         status: "failure",
+         status: "Failed",
          message: `Invalid email or password.`
       })
    }
@@ -120,7 +135,6 @@ const login = async (req, res, next) => {
 }
 
 const logout = async (req, res, next) => {
-
    if (req.user) {
       const cookieName = req.user.role; // Unique cookie name based on user role
       res.clearCookie(cookieName, {
@@ -134,19 +148,189 @@ const logout = async (req, res, next) => {
       return;
    }
    res.status(500).json({
-      status: "failure",
+      status: "Failed",
       message: "Invalid parameters",
    });
 };
 
-module.exports = logout;
+// Update user details
+const UpdateUserDetails = async (req, res, next) => {
+
+   const isUserExist = await Validator.isUserExist(req.body.id);
+   if (!isUserExist) {
+      return res.status(400).json({
+         status: "failed",
+         message: 'User dose not exits.',
+      });
+   }
+
+   if (req.user.role == 'student') {
+      //check input to update
+      let { error } = await Validator.ValidateUpdateStudentDetails(req.body);
+      if (error) {
+         return res.status(400).json({
+            status: "Failed",
+            message: 'Please enter valid details. ' + error
+         });
+      }
+      // Student details
+      const updateDetails = {
+         id: req.body.id,
+         firstName: req.body.firstName,
+         lastName: req.body.lastName,
+         email: req.body.email,
+         phone: req.body.phone,
+      };
+
+      //validate email
+      const isEmailExist = await Validator.isEmailExist(req.body.email);
+      // console.log("isEmailExist", isEmailExist);
+      if (isEmailExist) {
+         return res.status(400).json({
+            status: "failed",
+            message: 'The email is already in use by another account.',
+         });
+      }
+      if (req.user.role === Constants.STUDENT) {
+         const isPhoneExist = await Validator.isPhoneExist(req.body.phone);
+         // console.log("isPhoneExist", isPhoneExist);
+         if (isPhoneExist) {
+            return res.status(400).json({
+               status: "failed",
+               message: 'The Phone.No is already in use by another account.',
+            });
+         }
+      }
+
+      //Updating Student details
+      await models.student.findByIdAndUpdate(req.user.id, updateDetails, {
+         new: true,
+         runValidators: true,
+         useFindAndModify: false,
+      }).then((student) => {
+         //send res
+         res.status(200).json({
+            status: "success",
+            data: student
+         });
+      }).catch((err) => {
+         res.status(500).json({
+            status: "Failed",
+            message: "Failed to update: " + err
+         });
+      });
+   } else if (req.user.role == 'company') {
+      //check input to update
+      let { error } = await Validator.ValidateUpdateCompanyDetails(req.body);
+      if (error) {
+         return res.status(400).json({
+            status: "Failed",
+            message: 'Please enter valid details. ' + error
+         });
+      }
+      // company details
+      const updateDetails = {
+         companyName: req.body.companyName,
+         description: req.body.description,
+         location: req.body.location,
+         email: req.body.email,
+      };
+
+      //validate email
+      const isEmailExist = await Validator.isEmailExist(req.body.email);
+      // console.log("isEmailExist", isEmailExist);
+      if (isEmailExist) {
+         return res.status(400).json({
+            status: "failed",
+            message: 'The email is already in use by another account.',
+         });
+      }
+
+      //Updating Student details
+      await models.company.findByIdAndUpdate(req.user.id, updateDetails, {
+         new: true,
+         runValidators: true,
+         useFindAndModify: false,
+      }).then((company) => {
+         //send res
+         res.status(200).json({
+            status: "success",
+            data: company
+         });
+      }).catch((err) => {
+         res.status(500).json({
+            status: "Failed",
+            message: "Failed to update: " + err
+         });
+      });
+   }
+   next();
+};
+
+//Update password Details
+const UpdateUserPassword = async (req, res, next) => {
+   //check input to update
+   let { error } = await Validator.ValidateUpdateUserPassword(req.body);
+   if (error) {
+      return res.status(400).json({
+         status: "Failed",
+         message: 'Please enter valid details. ' + error
+      });
+   }
+
+   //when user login user id is fetched to req so using auth
+   const UserId = req.user.id;
+   let user;
+
+   if (req.user.role === "student") {
+      user = await
+         models
+            .student
+            .findById(UserId).select("+password");
+   } else {
+      user = await
+         models
+            .company
+            .findById(UserId).select("+password");
+   }
 
 
+   if (!user) {
+      return res.status(400).json({
+         status: "Failed",
+         message: `${req.user.role === "student" ? "Student" : "Company"} doesn't exist!`
+      });
+   }
 
+   //check old password and if old password is incorrect
+   const isPasswordMatch = await user.comparePassword(req.body.oldPassword);
+   if (!isPasswordMatch) {
+      return res.status(400).json({
+         status: "Failed",
+         message: "Old password is incorrect."
+      });
+   }
 
+   //check new and confirm password are same or not
+   if (req.body.confirmPassword != req.body.newPassword) {
+      return res.status(400).json({
+         status: "Failed",
+         message: "Passwords does not match."
+      });
+   }
+
+   //if yes reset password and save password to  user
+   user.password = req.body.newPassword;
+   await user.save();
+
+   //send res
+   sendToken(user, 200, res);
+};
 
 module.exports = {
    SignUp,
    login,
-   logout
+   logout,
+   UpdateUserDetails,
+   UpdateUserPassword
 };

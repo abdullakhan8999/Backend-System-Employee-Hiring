@@ -51,7 +51,14 @@ const companySchema = mongoose.Schema({
          ref: 'jobApplications'
       }
    ],
-
+   ticketsCreated: {
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "Ticket"
+   },
+   ticketsAssigned: {
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "Ticket"
+   },
    createdAt: {
       type: Date,
       immutable: true,

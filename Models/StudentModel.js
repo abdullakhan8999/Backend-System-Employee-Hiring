@@ -37,8 +37,15 @@ const StudentSchema = mongoose.Schema({
    },
    role: {
       type: String,
-      required: true,
       default: Constants.STUDENT,
+   },
+   ticketsCreated: {
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "Ticket"
+   },
+   ticketsAssigned: {
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "Ticket"
    },
    createdAt: {
       type: Date,

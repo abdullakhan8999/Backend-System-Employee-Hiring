@@ -16,6 +16,11 @@ const jobSchema = mongoose.Schema({
       required: true,
       ref: 'company'
    },
+   company_name: {
+      type: String,
+      required: true,
+      ref: 'company'
+   },
    location: {
       type: String,
       required: true,
@@ -28,25 +33,30 @@ const jobSchema = mongoose.Schema({
       minLength: [4, "Name should be more than 4 characters"],
       default: "",
    },
+   experience: {
+      type: String,
+      required: true,
+      default: "",
+   },
    salary: {
       type: String,
       required: true
    },
-   startDate: {
-      type: Date,
-      required: true
-   },
-   endDate: {
-      type: Date,
-      required: true
-   },
-   applications: {
+   jobApplications: {
       type: [
          {
             type: mongoose.Schema.Types.ObjectId,
             ref: "jobApplications"
          }
       ]
+   },
+   ticketsCreated: {
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "Ticket"
+   },
+   ticketsAssigned: {
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "Ticket"
    },
    createdAt: {
       type: Date,

@@ -123,15 +123,19 @@ const login = async (req, res, next) => {
          "message": "Not authorized."
       });
    }
-
-   let isPasswordMatch = await user.comparePassword(password);
-   if (!isPasswordMatch) {
-      return res.status(401).json({
-         status: "Failed",
-         message: `Invalid email or password.`
-      })
+   try {
+      let isPasswordMatch = await user.comparePassword(password);
+      if (!isPasswordMatch) {
+         return res.status(401).json({
+            status: "Failed",
+            message: `Invalid email or password.`
+         })
+      }
+      sendToken(user, 200, res)
+   } catch (error) {
+      console.log(error);
    }
-   sendToken(user, 200, res)
+
 }
 
 const logout = async (req, res, next) => {

@@ -39,11 +39,11 @@ const StudentSchema = mongoose.Schema({
       type: String,
       default: Constants.STUDENT,
    },
-   ticketsCreated: {
+   ticketCreated: {
       type: [mongoose.SchemaTypes.ObjectId],
       ref: "Ticket"
    },
-   ticketsAssigned: {
+   ticketAssigned: {
       type: [mongoose.SchemaTypes.ObjectId],
       ref: "Ticket"
    },

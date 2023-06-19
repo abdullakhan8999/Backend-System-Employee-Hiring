@@ -35,11 +35,11 @@ const adminSchema = mongoose.Schema({
       required: true,
       default: Constants.ADMIN,
    },
-   ticketsCreated: {
+   ticketCreated: {
       type: [mongoose.SchemaTypes.ObjectId],
       ref: "Ticket"
    },
-   ticketsAssigned: {
+   ticketAssigned: {
       type: [mongoose.SchemaTypes.ObjectId],
       ref: "Ticket"
    },

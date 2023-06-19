@@ -51,13 +51,13 @@ const companySchema = mongoose.Schema({
          ref: 'jobApplications'
       }
    ],
-   ticketsCreated: {
+   ticketCreated: {
       type: [mongoose.SchemaTypes.ObjectId],
-      ref: "Ticket"
+      ref: "ticket"
    },
-   ticketsAssigned: {
+   ticketAssigned: {
       type: [mongoose.SchemaTypes.ObjectId],
-      ref: "Ticket"
+      ref: "ticket"
    },
    createdAt: {
       type: Date,
@@ -80,7 +80,7 @@ companySchema.pre("save", async function (next) {
 
 //comparing password
 companySchema.methods.comparePassword = async function (enterPassword) {
-   return bcrypt.compare(enterPassword, this.password);
+   return await bcrypt.compare(enterPassword, this.password);
 }
 
 // get token method

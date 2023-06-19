@@ -19,7 +19,6 @@ exports.isAuthenticatedUser = async (req, res, next) => {
             message: 'Not authenticated to access this route',
          });
       }
-      // console.log("token", token);
 
       // find user by id
       const decoded = await jwt.verify(token, process.env.JWT_SECRET);
@@ -71,9 +70,29 @@ exports.authorizedRoles = (...roles) => {
             .status(401)
             .json({
                status: "failure",
-               message: "Not authorized to access this route"
+               message: "Not authorized roles to access this route"
             });
       }
       next();
    };
 };
+
+exports.validateTicketRequestBody = (req, res, next) => {
+   //Validate title of the ticket
+   if (!req.body.title) {
+      return res.status(400).send({
+         status: "Bad Request",
+         message: "Failed! Title is not provided"
+      })
+   }
+
+   //Validate description of ticket
+   if (!req.body.description) {
+      return res.status(400).send({
+         status: "Bad Request",
+         message: "Failed! Description is not provided"
+      })
+   }
+
+   next();
+}

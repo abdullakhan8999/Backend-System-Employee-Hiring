@@ -47,17 +47,41 @@ const CreteTicket = async (req, res, next) => {
 
 // Get all tickets
 const getAllTicket = async (req, res) => {
-   let reporter = req.user.id;
-   // validate user
-   if (!reporter) {
-      return res.status(400)
-         .json({
-            status: "failed",
-            message: "Bad Request!"
-         })
+   let queryObject = {};
+   if (req.user.id !== undefined) {
+      queryObject.reporter = req.user.id
+   }
+   if (req.query.status !== undefined) {
+      let isError = validateTicketStatus(req.query.status);
+      if (isError) {
+         return res
+            .status(400)
+            .json({
+               status: "failed",
+               message: "Invalid status code!"
+            })
+      }
+      queryObject.status = req.query.status
+      // queryObject.$options = "i"
+   }
+   if (req.query.ticketPriority !== undefined) {
+      if (req.query.ticketPriority >= 5 || req.query.ticketPriority < 1 || isNaN(req.query.ticketPriority)) {
+         return res
+            .status(400)
+            .json({
+               status: "failed",
+               message: "Invalid Ticket Priority!"
+            })
+      }
+      queryObject.ticketPriority = req.query.ticketPriority
    }
    try {
-      let tickets = await models.ticket.find({ reporter });
+      let tickets = null;
+      if (req.user.role == "admin") {
+         tickets = await models.ticket.find(req.query);
+      } else {
+         tickets = await models.ticket.find(queryObject);
+      }
       res.status(200).json({
          status: "success",
          count: tickets.length,

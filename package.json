@@ -1,7 +1,7 @@
 {
   "name": "backend-system-relevel-employee-hiring",
   "version": "1.0.0",
-  "description": "",
+  "description": "This project is a backend system for a hiring platform. It provides functionalities for managing employees, authentication, and authorization. The system includes models for Edwin, company, student, job, job application, and ticket. CRUD operations and authentication operations such as sign up, login, logout, update user details, and update user password are implemented.",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js"

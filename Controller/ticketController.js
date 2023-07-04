@@ -1,5 +1,6 @@
 const models = require("../Models");
 const { validateTicketStatus } = require("../Validator");
+const sendEmail = require("../Utils/NotificationClient");
 
 // Crete Ticket
 const CreteTicket = async (req, res, next) => {
@@ -20,7 +21,15 @@ const CreteTicket = async (req, res, next) => {
 
    //create a new ticket 
    let ticket = await models.ticket.create(ticketObject);
-   // console.log("ticket._id", ticket._id);
+
+   // Email to Users
+   sendEmail(
+      ticket._id,
+      `Ticket Created id: ${ticket._id} and status of ticket is ${ticket.status}.`,
+      ticket.description,
+      [req.user.email, admin.email],
+      ticket.reporter
+   )
 
    if (req.user.role === "admin") {
       admin.ticketCreated.push(ticket._id);
@@ -171,6 +180,20 @@ const UpdateTicket = async (req, res) => {
          ticket.ticketPriority = req.body.ticketPriority ? req.body.ticketPriority : ticket.ticketPriority;
          ticket.status = req.body.status ? req.body.status : ticket.status
          await ticket.save()
+
+         console.log("Before");
+         const admin = await models.admin.findOne({
+            role: "admin",
+         })
+         // Email to Users
+         sendEmail(
+            ticket._id,
+            `Ticket Updated id: ${ticket._id} and status of ticket is ${ticket.status}.`,
+            ticket.description,
+            [req.user.email, admin.email],
+            ticket.reporter
+         )
+         console.log("After");
 
          res.status(200).json({
             status: "success",

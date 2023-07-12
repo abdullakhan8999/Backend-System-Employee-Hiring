@@ -181,13 +181,13 @@ const logout = async (req, res, next) => {
       });
       res.status(200).json({
          status: "success",
-         data: {},
+         message: "Logout successfully."
       });
       return;
    }
    res.status(500).json({
       status: "Failed",
-      message: "Invalid parameters",
+      message: "Invalid parameters.",
    });
 };
 

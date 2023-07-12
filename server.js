@@ -1,6 +1,6 @@
 const dotenv = require('dotenv');
 const app = require('./app');
-const { connectDB } = require('./Configs/Config.db');
+const { connectDB } = require('./Configs/config.DB');
 const AdminModel = require('./Models/AdminModel');
 
 

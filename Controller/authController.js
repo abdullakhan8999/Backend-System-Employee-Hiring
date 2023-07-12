@@ -264,16 +264,8 @@ const UpdateUserDetails = async (req, res, next) => {
       }
 
    } else if (req.user.role == 'engineer') {
-      //validate status Code 
-      const isStatusExist = await Validator.isStatusExist(req.body.engineerStatus);
-      if (isStatusExist) {
-         return res.status(400).json({
-            status: "failed",
-            message: "Invalid status code: " + req.body.engineerStatus + ". Please provide a valid status code for the engineer.",
-         });
-      }
-
       try {
+         //validate status Code 
          if (req.body.engineerStatus || req.body.role) {
             return res
                .status(401)

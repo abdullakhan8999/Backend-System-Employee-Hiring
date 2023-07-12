@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 exports.connectDB = () => {
    mongoose
-      .connect("mongodb://localhost/Backend-System-for-Hiring", {
+      .connect("mongodb + srv://abdullakhan8999:nSMBRDq9Wrm8Oft5@crm-db.7raxbfa.mongodb.net/", {
          useNewUrlParser: true,
          useUnifiedTopology: true,
          autoIndex: true,

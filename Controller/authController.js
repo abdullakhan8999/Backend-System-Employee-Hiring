@@ -2,20 +2,19 @@ const Constants = require('../Constants/rolesConstants');
 const models = require('../Models');
 const sendToken = require('../Utils/sendToken');
 const Validator = require('../Validator');
-const { ROLES } = require("../Constants/rolesConstants");
+const { ROLES, engineerStatus } = require("../Constants/rolesConstants");
 
 const SignUp = async (req, res, next) => {
    const role = req.params.role;
-   if (!ROLES.includes(role)) {
+   const { email, phone } = req.body;
+
+   // Check for a valid role
+   if (!ROLES.includes(role) || role === Constants.ADMIN) {
       return res.status(401).json({
          "status": "Failed",
          "message": "Not authorized."
       });
    }
-   //not allowed to create admin
-   if (role === Constants.ADMIN) return res.status(400).json({ message: 'Invalid role' });
-
-   const { email, phone } = req.body;
 
    //validate email
    const isEmailExist = await Validator.isEmailExist(email);
@@ -26,16 +25,6 @@ const SignUp = async (req, res, next) => {
          message: 'The email is already in use by another account.',
       });
    }
-   if (role === Constants.STUDENT) {
-      const isPhoneExist = await Validator.isPhoneExist(phone);
-      // console.log("isPhoneExist", isPhoneExist);
-      if (isPhoneExist) {
-         return res.status(400).json({
-            status: "failed",
-            message: 'The Phone.No is already in use by another account.',
-         });
-      }
-   }
 
    if (role === Constants.COMPANY) {
       req.body.role = req.params.role;
@@ -43,7 +32,7 @@ const SignUp = async (req, res, next) => {
       if (error) {
          return res.status(400).json({
             status: "Failed",
-            message: 'Please enter valid details.' + error
+            message: 'Please enter valid details.'
          });
       }
 
@@ -59,6 +48,7 @@ const SignUp = async (req, res, next) => {
             sendToken(company, 201, res);
          })
          .catch((err) => {
+            console.log(err);
             return res.status(500).json({
                status: "failed",
                message: err
@@ -66,7 +56,43 @@ const SignUp = async (req, res, next) => {
          });
 
 
+   } else if (role === Constants.ENGINEER) {
+      req.body.role = req.params.role;
+      let { error } = await Validator.ValidateSignUp(req.body);
+      if (error) {
+         return res.status(400).json({
+            status: "Failed",
+            message: 'Please enter valid details. ' + error
+         });
+      }
+
+      await models.engineer.create({
+         firstName: req.body.firstName,
+         lastName: req.body.lastName,
+         email: req.body.email,
+         password: req.body.password
+      })
+         .then((engineer) => {
+            // console.log("engineer created:", engineer);
+            sendToken(engineer, 201, res);
+         })
+         .catch((err) => {
+            return res.status(500).json({
+               status: "failed",
+               message: `Error while creating user: ${err}`
+            })
+         });
    } else if (role === Constants.STUDENT) {
+      const isPhoneExist = await Validator.isPhoneExist(phone);
+      // console.log("isPhoneExist", isPhoneExist);
+      if (isPhoneExist) {
+         return res.status(400).json({
+            status: "failed",
+            message: 'The Phone.No is already in use by another account.',
+         });
+      }
+
+
       req.body.role = req.params.role;
       let { error } = await Validator.ValidateSignUp(req.body);
 
@@ -117,12 +143,20 @@ const login = async (req, res, next) => {
          message: 'Enter a valid email address.',
       });
    }
+   //check for correct user role
    if (user.role != role) {
       return res.status(401).json({
          "status": "Failed",
          "message": "Not authorized."
       });
    }
+   if (user.engineerStatus && user.engineerStatus === engineerStatus.pending || user.engineerStatus === engineerStatus.rejected) {
+      return res.status(401).json({
+         status: "Failed",
+         message: "Access denied. The engineer login request has not been approved."
+      })
+   }
+
    try {
       let isPasswordMatch = await user.comparePassword(password);
       if (!isPasswordMatch) {
@@ -160,32 +194,7 @@ const logout = async (req, res, next) => {
 // Update user details
 const UpdateUserDetails = async (req, res, next) => {
 
-   const isUserExist = await Validator.isUserExist(req.body.id);
-   if (!isUserExist) {
-      return res.status(400).json({
-         status: "failed",
-         message: 'User dose not exits.',
-      });
-   }
-
    if (req.user.role == 'student') {
-      //check input to update
-      let { error } = await Validator.ValidateUpdateStudentDetails(req.body);
-      if (error) {
-         return res.status(400).json({
-            status: "Failed",
-            message: 'Please enter valid details. ' + error
-         });
-      }
-      // Student details
-      const updateDetails = {
-         id: req.body.id,
-         firstName: req.body.firstName,
-         lastName: req.body.lastName,
-         email: req.body.email,
-         phone: req.body.phone,
-      };
-
       //validate email
       const isEmailExist = await Validator.isEmailExist(req.body.email);
       // console.log("isEmailExist", isEmailExist);
@@ -195,51 +204,40 @@ const UpdateUserDetails = async (req, res, next) => {
             message: 'The email is already in use by another account.',
          });
       }
-      if (req.user.role === Constants.STUDENT) {
-         const isPhoneExist = await Validator.isPhoneExist(req.body.phone);
-         // console.log("isPhoneExist", isPhoneExist);
-         if (isPhoneExist) {
-            return res.status(400).json({
-               status: "failed",
-               message: 'The Phone.No is already in use by another account.',
-            });
-         }
+      const isPhoneExist = await Validator.isPhoneExist(req.body.phone);
+      // console.log("isPhoneExist", isPhoneExist);
+      if (isPhoneExist) {
+         return res.status(400).json({
+            status: "failed",
+            message: 'The Phone.No is already in use by another account.',
+         });
       }
 
-      //Updating Student details
-      await models.student.findByIdAndUpdate(req.user.id, updateDetails, {
-         new: true,
-         runValidators: true,
-         useFindAndModify: false,
-      }).then((student) => {
-         //send res
+      try {
+         //Updating Student details
+         let student = await models.student.findById(req.user.id)
+         if (!student) {
+            return res.status(400).json({
+               status: "Failed",
+               message: "Student not found"
+            });
+         }
+         student.firstName = req.body.firstName ? req.body.firstName : student.firstName
+         student.lastName = req.body.lastName ? req.body.lastName : student.lastName
+         student.email = req.body.email ? req.body.email : student.email
+         student.phone = req.body.phone ? req.body.phone : student.phone
+         await student.save();
          res.status(200).json({
             status: "success",
             data: student
          });
-      }).catch((err) => {
+      } catch (err) {
          res.status(500).json({
             status: "Failed",
             message: "Failed to update: " + err
          });
-      });
-   } else if (req.user.role == 'company') {
-      //check input to update
-      let { error } = await Validator.ValidateUpdateCompanyDetails(req.body);
-      if (error) {
-         return res.status(400).json({
-            status: "Failed",
-            message: 'Please enter valid details. ' + error
-         });
-      }
-      // company details
-      const updateDetails = {
-         companyName: req.body.companyName,
-         description: req.body.description,
-         location: req.body.location,
-         email: req.body.email,
       };
-
+   } else if (req.user.role == 'company') {
       //validate email
       const isEmailExist = await Validator.isEmailExist(req.body.email);
       // console.log("isEmailExist", isEmailExist);
@@ -250,23 +248,66 @@ const UpdateUserDetails = async (req, res, next) => {
          });
       }
 
-      //Updating Student details
-      await models.company.findByIdAndUpdate(req.user.id, updateDetails, {
-         new: true,
-         runValidators: true,
-         useFindAndModify: false,
-      }).then((company) => {
-         //send res
+      try {
+         let company = await models.company.findById(req.user.id);
+         company.companyName = req.body.companyName ? req.body.companyName : company.companyName
+         company.description = req.body.description ? req.body.description : company.description
+         company.location = req.body.location ? req.body.location : company.location
+         company.email = req.body.email ? req.body.email : company.email
+         await company.save();
          res.status(200).json({
             status: "success",
             data: company
          });
-      }).catch((err) => {
+      } catch (err) {
          res.status(500).json({
             status: "Failed",
             message: "Failed to update: " + err
          });
-      });
+      }
+
+   } else if (req.user.role == 'engineer') {
+      //validate status Code 
+      const isStatusExist = await Validator.isStatusExist(req.body.engineerStatus);
+      if (isStatusExist) {
+         return res.status(400).json({
+            status: "failed",
+            message: "Invalid status code: " + req.body.engineerStatus + ". Please provide a valid status code for the engineer.",
+         });
+      }
+
+      try {
+         if (req.body.engineerStatus || req.body.role) {
+            return res
+               .status(401)
+               .json({
+                  status: "failure",
+                  message: "Not authorized roles to access this route"
+               });
+         }
+         let engineer = await models.engineer.findById(req.body.id);
+         engineer.firstName = req.body.firstName ? req.body.firstName : engineer.firstName;
+         engineer.lastName = req.body.lastName ? req.body.lastName : engineer.lastName;
+         engineer.email = req.body.email ? req.body.email : engineer.email;
+         await engineer.save();
+         res.status(200).json({
+            status: "success",
+            message: "Engineer status successfully updated.",
+            data: engineer
+         });
+      } catch (err) {
+         res.status(500).json({
+            status: "Failed",
+            message: "Failed to update engineer status. Please try again " + err
+         });
+      }
+   } else {
+      return res
+         .status(401)
+         .json({
+            status: "failure",
+            message: "Not authorized roles to access this route"
+         });
    }
    next();
 };
@@ -284,25 +325,42 @@ const UpdateUserPassword = async (req, res, next) => {
 
    //when user login user id is fetched to req so using auth
    const UserId = req.user.id;
+   //check for id validation
+   if (!UserId || UserId.length !== 24) {
+      return IdValidation(res);
+   }
    let user;
 
+   // Find user by role and id
    if (req.user.role === "student") {
       user = await
          models
             .student
             .findById(UserId).select("+password");
-   } else {
+   } else if (req.user.role === "company") {
       user = await
          models
             .company
             .findById(UserId).select("+password");
+   } else if (req.user.role === "engineer") {
+      user = await
+         models
+            .engineer
+            .findById(UserId).select("+password");
+   } else {
+      return res
+         .status(401)
+         .json({
+            status: "failure",
+            message: "Not authorized roles to access this route"
+         });
    }
 
-
+   //Check if the user exists or not 
    if (!user) {
       return res.status(400).json({
          status: "Failed",
-         message: `${req.user.role === "student" ? "Student" : "Company"} doesn't exist!`
+         message: `${req.user.role === "student" ? "Student" : req.user.role === company ? "Company" : "Engineer"} doesn't exist!`
       });
    }
 

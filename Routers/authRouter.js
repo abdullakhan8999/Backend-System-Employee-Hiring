@@ -5,7 +5,7 @@ const router = express.Router();
 const { isAuthenticatedUser, authorizedRoles } = require("../Middleware/auth");
 //Controllers
 const { SignUp, login, logout, UpdateUserDetails, UpdateUserPassword } = require("../Controller/authController");
-const { ROLES, Roles } = require('../Constants/rolesConstants');
+const { Roles } = require('../Constants/rolesConstants');
 
 router.route('/register/:role').post(SignUp);
 router.route('/login/:role').post(login)

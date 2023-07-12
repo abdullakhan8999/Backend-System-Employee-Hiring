@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { ROLES } = require("../Constants/rolesConstants");
+const { Roles } = require("../Constants/rolesConstants");
 
 // Middlewares
 const { isAuthenticatedUser, authorizedRoles } = require("../Middleware/auth");
@@ -16,31 +16,31 @@ const {
 
 
 router.route('/admin/students/:role')
-   .get(isAuthenticatedUser, authorizedRoles(ROLES[0], ROLES[3]), getAllStudents);
+   .get(isAuthenticatedUser, authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER), getAllStudents);
 
 router.route('/companies/:role')
    .get(
       isAuthenticatedUser,
-      authorizedRoles(...ROLES.map(role => role)),
+      authorizedRoles(...Object.values(Roles)),
       getAllCompanies
    );
 
 router.route('/student/details/:role')
    .get(
       isAuthenticatedUser,
-      authorizedRoles(ROLES[0], ROLES[2], ROLES[3]),
+      authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER),
       getStudentDetails);
 
 router.route('/company/details/:role')
    .get(
       isAuthenticatedUser,
-      authorizedRoles(...ROLES.map(role => role)),
+      authorizedRoles(...Object.values(Roles)),
       getCompanyDetails);
 
 router.route('/delete/user/:role')
    .delete(
       isAuthenticatedUser,
-      authorizedRoles(ROLES[0], ROLES[3]),
+      authorizedRoles(Roles.ADMIN, Roles.ENGINEER),
       deleteUser
    );
 

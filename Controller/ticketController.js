@@ -33,14 +33,14 @@ const CreteTicket = async (req, res, next) => {
    //create a new ticket 
    let ticket = await models.ticket.create(ticketObject);
 
-   // // Email to Users
-   // sendEmail(
-   //    ticket._id,
-   //    `Ticket Created id: ${ticket._id} and status of ticket is ${ticket.status}.`,
-   //    ticket.description,
-   //    [req.user.email, engineer.email],
-   //    ticket.reporter
-   // )
+   // Email to Users
+   sendEmail(
+      ticket._id,
+      `Ticket Created id: ${ticket._id} and status of ticket is ${ticket.status}.`,
+      ticket.description,
+      [req.user.email, engineer.email],
+      ticket.reporter
+   )
 
 
 
@@ -73,10 +73,14 @@ const CreteTicket = async (req, res, next) => {
 
 // Get all tickets
 const getAllTicket = async (req, res) => {
+   //query params object
    let queryObject = {};
+   //query reporter
    if (req.user.id !== undefined) {
       queryObject.reporter = req.user.id
    }
+
+   //query status code  and validation 
    if (req.query.status !== undefined) {
       let isError = validateTicketStatus(req.query.status);
       if (isError) {
@@ -90,6 +94,8 @@ const getAllTicket = async (req, res) => {
       queryObject.status = req.query.status
       // queryObject.$options = "i"
    }
+
+   //query ticket Priority code  and validation
    if (req.query.ticketPriority !== undefined) {
       if (req.query.ticketPriority >= 5 || req.query.ticketPriority < 1 || isNaN(req.query.ticketPriority)) {
          return res
@@ -101,9 +107,11 @@ const getAllTicket = async (req, res) => {
       }
       queryObject.ticketPriority = req.query.ticketPriority
    }
+
+   //query 
    try {
       let tickets = null;
-      if (req.user.role == "admin") {
+      if (req.user.role == "admin" || req.user.role == "engineer") {
          tickets = await models.ticket.find(req.query);
       } else {
          tickets = await models.ticket.find(queryObject);
@@ -135,7 +143,7 @@ const getTicket = async (req, res) => {
    try {
       let ticket = await models.ticket.findById(ticket_id);
 
-      if (ticket && ticket.reporter === req.user.id || req.user.role === "admin") {
+      if (ticket && ticket.reporter === req.user.id || req.user.role === "admin" || req.user.role === "engineer") {
          return res
             .status(200)
             .json({
@@ -191,26 +199,25 @@ const UpdateTicket = async (req, res) => {
       }
 
       // admin and user who created ticket can only update the ticket
-      if (ticket.reporter == req.user._id || req.user.role == "admin") {
+      if (ticket.reporter == req.user._id || req.user.role == "admin" || req.user.role == "engineer") {
          ticket.title = req.body.title ? req.body.title : ticket.title;
          ticket.description = req.body.description ? req.body.description : ticket.description;
          ticket.ticketPriority = req.body.ticketPriority ? req.body.ticketPriority : ticket.ticketPriority;
          ticket.status = req.body.status ? req.body.status : ticket.status
          await ticket.save()
 
-         console.log("Before");
-         const admin = await models.admin.findOne({
-            role: "admin",
+         const engineer = await models.engineer.findOne({
+            engineerStatus: engineerStatus.approved
          })
-         // Email to Users
-         sendEmail(
-            ticket._id,
-            `Ticket Updated id: ${ticket._id} and status of ticket is ${ticket.status}.`,
-            ticket.description,
-            [req.user.email, admin.email],
-            ticket.reporter
-         )
-         console.log("After");
+
+         // // Email to Users
+         // sendEmail(
+         //    ticket._id,
+         //    `Ticket Updated id: ${ticket._id} and status of ticket is ${ticket.status}.`,
+         //    ticket.description,
+         //    [req.user.email, engineer.email],
+         //    ticket.reporter
+         // )
 
          res.status(200).json({
             status: "success",
@@ -230,6 +237,7 @@ const UpdateTicket = async (req, res) => {
    }
 }
 
+// never delete a ticket without need
 module.exports = {
    CreteTicket,
    UpdateTicket,

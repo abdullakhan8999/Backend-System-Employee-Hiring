@@ -14,15 +14,6 @@ router
       CreteTicket
    )
 
-// update Ticket
-router
-   .route('/update/ticket/:role')
-   .put(
-      isAuthenticatedUser,
-      authorizedRoles(...Object.values(Roles)),
-      UpdateTicket
-   )
-
 // get all Tickets
 router
    .route('/get_all/ticket/:role')
@@ -41,5 +32,13 @@ router
       getTicket
    )
 
+// update Ticket
+router
+   .route('/update/ticket/:role')
+   .put(
+      isAuthenticatedUser,
+      authorizedRoles(...Object.values(Roles)),
+      UpdateTicket
+   )
 
 module.exports = router;

@@ -9,28 +9,26 @@ dotenv.config({ path: "./Configs/.env" });
 
 //init admin 
 const initAdmin = async () => {
-   const admin = await AdminModel.findOne({ email: process.env.admin_email })
+   const existingAdmin = await AdminModel.findOne({ email: process.env.admin_email });
 
-   // if admin is not initialized then create a new admin 
-   if (!admin) {
-      AdminModel.create({
-         firstName: process.env.ADMIN_FIRST_NAME,
-         lastName: process.env.ADMIN_LAST_NAME,
-         email: process.env.ADMIN_EMAIL,
-         password: process.env.ADMIN_PASSWORD
-      }).then(() => {
-         // console.log("Admin is created", admin);
-         console.log("Admin is created.");
-      }).catch((err) => {
-         console.log("Error creating admin: ", err);
-      });
-   } else {
-      // else admin is already initialized
-      console.log("Admin already exists");
-      return
+   // Add a comment to indicate that the admin already exists
+   if (existingAdmin) {
+      console.log("Admin already exists. Skipping update.");
+      return;
    }
-   // return
-}
+
+   const updatedAdmin = {
+      firstName: process.env.ADMIN_FIRST_NAME,
+      lastName: process.env.ADMIN_LAST_NAME,
+      email: process.env.ADMIN_EMAIL,
+      password: process.env.ADMIN_PASSWORD
+   };
+
+   await AdminModel.findOneAndUpdate({ email: process.env.admin_email }, updatedAdmin, { upsert: true });
+
+   console.log("Admin is created.");
+};
+
 const init = async () => {
    await connectDB();
    await initAdmin();

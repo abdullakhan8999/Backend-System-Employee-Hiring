@@ -9,25 +9,19 @@ dotenv.config({ path: "./Configs/.env" });
 
 //init admin 
 const initAdmin = async () => {
-   const existingAdmin = await AdminModel.findOne({ email: process.env.admin_email });
-
-   // Add a comment to indicate that the admin already exists
-   if (existingAdmin) {
-      console.log("Admin already exists. Skipping update.");
-      return;
-   }
-
-   const updatedAdmin = {
-      firstName: process.env.ADMIN_FIRST_NAME,
-      lastName: process.env.ADMIN_LAST_NAME,
-      email: process.env.ADMIN_EMAIL,
-      password: process.env.ADMIN_PASSWORD
-   };
-
-   await AdminModel.findOneAndUpdate({ email: process.env.admin_email }, updatedAdmin, { upsert: true });
-
+   await AdminModel.findOneAndUpdate(
+      { email: process.env.admin_email },
+      {
+         firstName: process.env.ADMIN_FIRST_NAME,
+         lastName: process.env.ADMIN_LAST_NAME,
+         email: process.env.ADMIN_EMAIL,
+         password: process.env.ADMIN_PASSWORD
+      },
+      { upsert: true, new: true }
+   );
    console.log("Admin is created.");
 };
+
 
 const init = async () => {
    await connectDB();

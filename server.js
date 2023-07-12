@@ -9,17 +9,17 @@ dotenv.config({ path: "./Configs/.env" });
 
 //init admin 
 const initAdmin = async () => {
-   const admin = await AdminModel.findOne({ email: process.env.admin_email })
+   const admin = await AdminModel.findOne({ email: "abdullakhan8999@gmail.com" })
 
    if (admin) {
       console.log("Admin already exists");
       return
    };
    AdminModel.create({
-      firstName: process.env.ADMIN_FIRST_NAME,
-      lastName: process.env.ADMIN_LAST_NAME,
-      email: process.env.ADMIN_EMAIL,
-      password: process.env.ADMIN_PASSWORD
+      firstName: "Patan",
+      lastName: "Abdulla Khan",
+      email: "abdullakhan8999@gmail.com",
+      password: "abdul8999",
    }).then((admin) => {
       // console.log("Admin is created", admin);
       console.log("Admin is created.");
@@ -30,8 +30,8 @@ const initAdmin = async () => {
 const init = async () => {
    await connectDB();
    await initAdmin();
-   app.listen(process.env.PORT, () => {
-      console.log(`Server is up and running! Access it at http://localhost:${process.env.PORT}/api/v1`);
+   app.listen(8080, () => {
+      console.log(`Server is up and running! Access it at http://localhost:${8080}/api/v1`);
    })
 }
 init();

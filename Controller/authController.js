@@ -274,7 +274,7 @@ const UpdateUserDetails = async (req, res, next) => {
                   message: "Not authorized roles to access this route"
                });
          }
-         let engineer = await models.engineer.findById(req.body.id);
+         let engineer = await models.engineer.findById(req.user.id);
          engineer.firstName = req.body.firstName ? req.body.firstName : engineer.firstName;
          engineer.lastName = req.body.lastName ? req.body.lastName : engineer.lastName;
          engineer.email = req.body.email ? req.body.email : engineer.email;

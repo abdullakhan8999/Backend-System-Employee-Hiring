@@ -210,14 +210,14 @@ const UpdateTicket = async (req, res) => {
             engineerStatus: engineerStatus.approved
          })
 
-         // // Email to Users
-         // sendEmail(
-         //    ticket._id,
-         //    `Ticket Updated id: ${ticket._id} and status of ticket is ${ticket.status}.`,
-         //    ticket.description,
-         //    [req.user.email, engineer.email],
-         //    ticket.reporter
-         // )
+         // Email to Users
+         sendEmail(
+            ticket._id,
+            `Ticket Updated id: ${ticket._id} and status of ticket is ${ticket.status}.`,
+            ticket.description,
+            [req.user.email, engineer.email],
+            ticket.reporter
+         )
 
          res.status(200).json({
             status: "success",

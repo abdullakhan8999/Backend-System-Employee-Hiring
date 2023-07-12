@@ -5,9 +5,9 @@ module.exports = async (email, password) => {
 
    if (password != null || password != undefined) {
       isEmailExistInAdmin = await models.admin.findOne({ email }).select("+password").exec();
+      isEmailExistInEngineer = await models.engineer.findOne({ email }).select("+password").exec();
       isEmailExistInStudent = await models.student.findOne({ email }).select("+password").exec();
       isEmailExistInCompany = await models.company.findOne({ email }).select("+password").exec();
-      isEmailExistInEngineer = await models.engineer.findOne({ email }).select("+password").exec();
       return isEmailExistInCompany || isEmailExistInAdmin || isEmailExistInStudent || isEmailExistInEngineer;
    }
 

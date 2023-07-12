@@ -197,7 +197,6 @@ const UpdateUserDetails = async (req, res, next) => {
    if (req.user.role == 'student') {
       //validate email
       const isEmailExist = await Validator.isEmailExist(req.body.email);
-      // console.log("isEmailExist", isEmailExist);
       if (isEmailExist) {
          return res.status(400).json({
             status: "failed",
@@ -205,7 +204,6 @@ const UpdateUserDetails = async (req, res, next) => {
          });
       }
       const isPhoneExist = await Validator.isPhoneExist(req.body.phone);
-      // console.log("isPhoneExist", isPhoneExist);
       if (isPhoneExist) {
          return res.status(400).json({
             status: "failed",
@@ -240,7 +238,6 @@ const UpdateUserDetails = async (req, res, next) => {
    } else if (req.user.role == 'company') {
       //validate email
       const isEmailExist = await Validator.isEmailExist(req.body.email);
-      // console.log("isEmailExist", isEmailExist);
       if (isEmailExist) {
          return res.status(400).json({
             status: "failed",

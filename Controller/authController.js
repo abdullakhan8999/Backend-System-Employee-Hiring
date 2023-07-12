@@ -220,6 +220,17 @@ const UpdateUserDetails = async (req, res, next) => {
                message: "Student not found"
             });
          }
+
+         // filter out valid fields
+         const invalidFields = Object.keys(req.body).filter(key => !student.schema.path(key));
+         // invalidField has any invalid fields
+         if (invalidFields.length > 0) {
+            return res.status(400).json({
+               status: "failed",
+               message: "Invalid fields: " + invalidFields.join(", ")
+            });
+         }
+
          student.firstName = req.body.firstName ? req.body.firstName : student.firstName
          student.lastName = req.body.lastName ? req.body.lastName : student.lastName
          student.email = req.body.email ? req.body.email : student.email
@@ -247,10 +258,30 @@ const UpdateUserDetails = async (req, res, next) => {
 
       try {
          let company = await models.company.findById(req.user.id);
-         company.companyName = req.body.companyName ? req.body.companyName : company.companyName
-         company.description = req.body.description ? req.body.description : company.description
-         company.location = req.body.location ? req.body.location : company.location
-         company.email = req.body.email ? req.body.email : company.email
+         if (!company) {
+            return res.status(400).json({
+               status: "Failed",
+               message: "Company not found"
+            });
+         }
+
+         // filter out valid fields
+         const invalidFields = Object.keys(req.body).filter(key => !company.schema.path(key));
+         // invalidField has any invalid fields
+         if (invalidFields.length > 0) {
+            return res.status(400).json({
+               status: "failed",
+               message: "Invalid fields: " + invalidFields.join(", ")
+            });
+         }
+
+         // Update company fields
+         company.companyName = req.body.companyName || company.companyName;
+         company.description = req.body.description || company.description;
+         company.location = req.body.location || company.location;
+         company.email = req.body.email || company.email;
+
+         // Save company
          await company.save();
          res.status(200).json({
             status: "success",
@@ -275,6 +306,23 @@ const UpdateUserDetails = async (req, res, next) => {
                });
          }
          let engineer = await models.engineer.findById(req.user.id);
+         if (!engineer) {
+            return res.status(400).json({
+               status: "Failed",
+               message: "Engineer not found"
+            });
+         }
+
+         // filter out valid fields
+         const invalidFields = Object.keys(req.body).filter(key => !engineer.schema.path(key));
+         // invalidField has any invalid fields
+         if (invalidFields.length > 0) {
+            return res.status(400).json({
+               status: "failed",
+               message: "Invalid fields: " + invalidFields.join(", ")
+            });
+         }
+
          engineer.firstName = req.body.firstName ? req.body.firstName : engineer.firstName;
          engineer.lastName = req.body.lastName ? req.body.lastName : engineer.lastName;
          engineer.email = req.body.email ? req.body.email : engineer.email;

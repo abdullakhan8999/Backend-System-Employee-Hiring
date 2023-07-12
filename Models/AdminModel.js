@@ -77,10 +77,8 @@ adminSchema.methods.getJwtToken = function () {
          id: this._id,
          role: this.role
       },
-      "kjd242275afdjf4524bahdgf244a24",
-      { expiresIn: "5d" }
-      // process.env.JWT_SECRET,
-      // { expiresIn: process.env.JWT_EXPIRES_IN }
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
    );
 };
 

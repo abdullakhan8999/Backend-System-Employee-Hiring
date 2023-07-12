@@ -370,20 +370,11 @@ const UpdateUserPassword = async (req, res, next) => {
 
    // Find user by role and id
    if (req.user.role === "student") {
-      user = await
-         models
-            .student
-            .findById(UserId).select("+password");
+      user = await models.student.findById(UserId).select("+password");
    } else if (req.user.role === "company") {
-      user = await
-         models
-            .company
-            .findById(UserId).select("+password");
+      user = await models.company.findById(UserId).select("+password");
    } else if (req.user.role === "engineer") {
-      user = await
-         models
-            .engineer
-            .findById(UserId).select("+password");
+      user = await models.engineer.findById(UserId).select("+password");
    } else {
       return res
          .status(401)

@@ -14,7 +14,9 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // router import
 app.use("/api/v1", require("./Routers/authRouter"));
 app.use("/api/v1", require("./Routers/adminRouter"));
+app.use("/api/v1", require("./Routers/engineerRouter"));
 app.use("/api/v1", require("./Routers/jobRouter"));
+app.use("/api/v1", require("./Routers/jobApplicationRouter"));
 app.use("/api/v1", require("./Routers/ticketRouter"));
 
 

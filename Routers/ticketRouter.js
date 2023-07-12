@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 const { isAuthenticatedUser, authorizedRoles, validateTicketRequestBody } = require("../Middleware/auth");
 const { CreteTicket, UpdateTicket, getAllTicket, getTicket } = require("../Controller/ticketController.js");
-const { ROLES } = require('../Constants/rolesConstants');
+const { Roles } = require('../Constants/rolesConstants');
 
 // create Ticket
 router
    .route('/create/tickets/:role')
    .post(
       isAuthenticatedUser,
-      authorizedRoles(...ROLES.map(role => role)),
+      authorizedRoles(...Object.values(Roles)),
       validateTicketRequestBody,
       CreteTicket
    )
@@ -19,7 +19,7 @@ router
    .route('/update/ticket/:role')
    .put(
       isAuthenticatedUser,
-      authorizedRoles(...ROLES.map(role => role)),
+      authorizedRoles(...Object.values(Roles)),
       UpdateTicket
    )
 
@@ -28,7 +28,7 @@ router
    .route('/get_all/ticket/:role')
    .get(
       isAuthenticatedUser,
-      authorizedRoles(...ROLES.map(role => role)),
+      authorizedRoles(...Object.values(Roles)),
       getAllTicket
    )
 
@@ -37,7 +37,7 @@ router
    .route('/get/ticket/:role')
    .get(
       isAuthenticatedUser,
-      authorizedRoles(...ROLES.map(role => role)),
+      authorizedRoles(...Object.values(Roles)),
       getTicket
    )
 

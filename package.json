@@ -4,7 +4,8 @@
   "description": "This project is a backend system for a hiring platform. It provides functionalities for managing employees, authentication, and authorization. The system includes models for Edwin, company, student, job, job application, and ticket. CRUD operations and authentication operations such as sign up, login, logout, update user details, and update user password are implemented.",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "test": "jest --testEnvironment=node --runInBand --detectOpenHandles ./tests"
   },
   "repository": {
     "type": "git",
@@ -22,8 +23,10 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "jest": "^29.6.0",
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.0",
+    "mongodb-memory-server": "^8.13.0",
     "mongoose": "^7.0.0",
     "node-rest-client": "^3.1.1",
     "validator": "^13.9.0"

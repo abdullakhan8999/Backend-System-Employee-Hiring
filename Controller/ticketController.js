@@ -1,9 +1,11 @@
 const models = require("../Models");
 const { validateTicketStatus } = require("../Validator");
 const sendEmail = require("../Utils/NotificationClient");
+const { engineerStatus } = require("../Constants/rolesConstants");
 
 // Crete Ticket
 const CreteTicket = async (req, res, next) => {
+
    // ticket object
    const ticketObject = {
       title: req.body.title,
@@ -14,25 +16,36 @@ const CreteTicket = async (req, res, next) => {
       roleReporter: req.user.role //this is coming from authJwt middleware
    }
    // Assign the ticket to the admin
-   const admin = await models.admin.findOne({
-      role: "admin",
+   const engineer = await models.engineer.findOne({
+      engineerStatus: engineerStatus.approved
    })
-   ticketObject.assignee = admin._id;
+
+   if (!engineer) {
+      return res
+         .status(400)
+         .json({
+            status: 'failed',
+            message: "Engineer is not available"
+         })
+   }
+   ticketObject.assignee = engineer._id;
 
    //create a new ticket 
    let ticket = await models.ticket.create(ticketObject);
 
-   // Email to Users
-   sendEmail(
-      ticket._id,
-      `Ticket Created id: ${ticket._id} and status of ticket is ${ticket.status}.`,
-      ticket.description,
-      [req.user.email, admin.email],
-      ticket.reporter
-   )
+   // // Email to Users
+   // sendEmail(
+   //    ticket._id,
+   //    `Ticket Created id: ${ticket._id} and status of ticket is ${ticket.status}.`,
+   //    ticket.description,
+   //    [req.user.email, engineer.email],
+   //    ticket.reporter
+   // )
 
-   if (req.user.role === "admin") {
-      admin.ticketCreated.push(ticket._id);
+
+
+   if (req.user.role === "engineer") {
+      engineer.ticketCreated.push(ticket._id);
    } else if (req.user.role === "student") {
       const student = await models.student.findById(req.user._id);
       student.ticketCreated.push(ticket._id);
@@ -41,10 +54,14 @@ const CreteTicket = async (req, res, next) => {
       const company = await models.company.findById(req.user.id);
       company.ticketCreated.push(ticket._id);
       await company.save()
-   };
+   } else {
+      const admin = await models.admin.findById(req.user.id);
+      admin.ticketCreated.push(ticket._id);
+      await admin.save()
+   }
 
-   admin.ticketAssigned.push(ticket._id)
-   await admin.save()
+   engineer.ticketAssigned.push(ticket._id)
+   await engineer.save()
 
    res
       .status(200)

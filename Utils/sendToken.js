@@ -23,6 +23,17 @@ const sendToken = async (user, statusCode, res) => {
         jobs: user.jobs,
         jobApplications: user.jobApplications,
       });
+    } else if (user.role === 'engineer') {
+      res.status(statusCode).cookie(cookieName, token, options).json({
+        status: "success",
+        token,
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        engineerStatus: user.engineerStatus
+      });
     } else {
       res.status(statusCode).cookie(cookieName, token, options).json({
         status: "success",

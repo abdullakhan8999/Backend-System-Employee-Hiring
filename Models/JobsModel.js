@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const { JOB_STATUSES } = require('../Constants/jobApplicationConstants');
 
 const jobSchema = mongoose.Schema({
    title: {
@@ -11,6 +11,11 @@ const jobSchema = mongoose.Schema({
       type: String,
       required: true,
    },
+   hiring_status: {
+      type: String,
+      required: true,
+      default: JOB_STATUSES.Hiring_Status_Open,
+   },
    company_id: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
@@ -20,6 +25,11 @@ const jobSchema = mongoose.Schema({
       type: String,
       required: true,
       ref: 'company'
+   },
+   vacancies: {
+      type: Number,
+      required: true,
+      default: 1,
    },
    location: {
       type: String,

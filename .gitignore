@@ -7,5 +7,7 @@ Configs/.env
 node_modules/
 package-lock.json
 refVar.js
-
+tests/
+extensions.josn/
+.vscode/
 #ignore

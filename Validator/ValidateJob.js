@@ -10,6 +10,8 @@ module.exports = (data) => {
       requirement: Joi.array().items(Joi.string()).min(1).required(),
       experience: Joi.string().required(),
       salary: Joi.string().required(),
+      hiring_status: Joi.string().required(),
+      vacancies: Joi.number().min(1).required(),
    });
 
    return schema.validate(data);

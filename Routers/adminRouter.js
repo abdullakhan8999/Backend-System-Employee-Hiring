@@ -16,7 +16,7 @@ const {
 
 
 router.route('/admin/students/:role')
-   .get(isAuthenticatedUser, authorizedRoles(ROLES[0]), getAllStudents);
+   .get(isAuthenticatedUser, authorizedRoles(ROLES[0], ROLES[3]), getAllStudents);
 
 router.route('/companies/:role')
    .get(
@@ -28,7 +28,7 @@ router.route('/companies/:role')
 router.route('/student/details/:role')
    .get(
       isAuthenticatedUser,
-      authorizedRoles("admin", "company"),
+      authorizedRoles(ROLES[0], ROLES[2], ROLES[3]),
       getStudentDetails);
 
 router.route('/company/details/:role')
@@ -40,8 +40,9 @@ router.route('/company/details/:role')
 router.route('/delete/user/:role')
    .delete(
       isAuthenticatedUser,
-      authorizedRoles("admin"),
-      deleteUser);
+      authorizedRoles(ROLES[0], ROLES[3]),
+      deleteUser
+   );
 
 
 module.exports = router;

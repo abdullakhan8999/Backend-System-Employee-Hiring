@@ -43,6 +43,10 @@ const StudentSchema = mongoose.Schema({
       type: [mongoose.SchemaTypes.ObjectId],
       ref: "Ticket"
    },
+   appliedJobs: {
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "job"
+   },
    ticketAssigned: {
       type: [mongoose.SchemaTypes.ObjectId],
       ref: "Ticket"

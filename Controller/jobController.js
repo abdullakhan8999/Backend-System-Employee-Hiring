@@ -93,7 +93,16 @@ const createJob = async (req, res, next) => {
 const getAllJobs = async (req, res, next) => {
    try {
       // Check if there are no query parameters, and return all jobs
-      if (Object.keys(req.query).length === 0) query = models.job.find();
+      if (Object.keys(req.query).length === 0) {
+         let jobs = models.job.find()
+         return res.status(200).json({
+            status: 'success',
+            results: jobs.length,
+            data: {
+               jobs,
+            },
+         });
+      };
 
       // Request query
       const apiFeatures = new ApiFeatures(models.job.find(), req.query)

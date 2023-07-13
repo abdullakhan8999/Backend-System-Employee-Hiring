@@ -4,6 +4,32 @@ class ApiFeatures {
       this.queryStr = queryStr;
    }
 
+   searchByFirstName() {
+      if (this.queryStr.firstName) {
+         const firstName = {
+            firstName: {
+               $regex: this.queryStr.firstName,
+               $options: "i",
+            },
+         }
+         this.query = this.query.find({ ...firstName });
+      }
+      return this;
+   }
+
+   searchByEmail() {
+      if (this.queryStr.email) {
+         const email = {
+            email: {
+               $regex: this.queryStr.email,
+               $options: "i",
+            },
+         }
+         this.query = this.query.find({ ...email });
+      }
+      return this;
+   }
+
    searchByTitle() {
       if (this.queryStr.title) {
          const title = {
@@ -16,6 +42,20 @@ class ApiFeatures {
       }
       return this;
    }
+
+   searchByCompanyName() {
+      if (this.queryStr.companyName) {
+         const companyName = {
+            companyName: {
+               $regex: this.queryStr.companyName,
+               $options: "i",
+            },
+         }
+         this.query = this.query.find({ ...companyName });
+      }
+      return this;
+   }
+
    searchByCompany() {
       if (this.queryStr.company_name) {
          const company_name = {
@@ -28,8 +68,8 @@ class ApiFeatures {
       }
       return this;
    }
+
    searchByLocation() {
-      console.log(this.queryStr.location);
       if (this.queryStr.location) {
          const location = {
             location: {

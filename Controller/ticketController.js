@@ -79,6 +79,10 @@ const getAllTicket = async (req, res) => {
    if (req.user.id !== undefined) {
       queryObject.reporter = req.user.id
    }
+   if (req.query.status) {
+      req.query.status = req.query.status.toUpperCase()
+   }
+
 
    //query status code  and validation 
    if (req.query.status !== undefined) {
@@ -92,7 +96,6 @@ const getAllTicket = async (req, res) => {
             })
       }
       queryObject.status = req.query.status
-      // queryObject.$options = "i"
    }
 
    //query ticket Priority code  and validation

@@ -28,7 +28,7 @@ router.route('/companies/:role')
 router.route('/student/details/:role')
    .get(
       isAuthenticatedUser,
-      authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER),
+      authorizedRoles(...Object.values(Roles)),
       getStudentDetails);
 
 router.route('/company/details/:role')

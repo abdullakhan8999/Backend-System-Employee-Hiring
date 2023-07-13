@@ -30,7 +30,7 @@ router
    .route('/company/job/applications/:role')
    .get(
       isAuthenticatedUser,
-      authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER),
+      authorizedRoles(...Object.values(Roles)),
       getAllApplication
    );
 
@@ -39,7 +39,7 @@ router
    .route('/company/job/application/:role')
    .get(
       isAuthenticatedUser,
-      authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER),
+      authorizedRoles(...Object.values(Roles)),
       getApplicationId
    );
 

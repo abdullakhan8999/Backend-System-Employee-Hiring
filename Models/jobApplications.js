@@ -12,11 +12,15 @@ const jobApplicationsSchema = mongoose.Schema({
       required: true,
       ref: 'jobs'
    },
+   title: {
+      type: String,
+      required: true,
+   },
    applicationStatus: {
       type: String,
-      default: 'pending'
+      default: 'Pending'
    },
-   applications: {
+   jobAppliedAt: {
       type: Date,
       default: () => { return Date.now(); }
    },

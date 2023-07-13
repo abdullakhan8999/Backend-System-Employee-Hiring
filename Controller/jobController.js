@@ -1,7 +1,6 @@
 const models = require("../Models");
 const {
    ValidateJob,
-   ValidateDeleteJobById,
    IdValidation
 } = require("../Validator");
 const ApiFeatures = require("../Utils/ApiFeatures");

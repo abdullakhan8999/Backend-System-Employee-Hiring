@@ -107,5 +107,28 @@ class ApiFeatures {
       }
       return this;
    }
+
+   searchByApplicationStatus() {
+      if (this.queryStr.applicationStatus) {
+         const applicationStatus = {
+            applicationStatus: {
+               $regex: this.queryStr.applicationStatus,
+               $options: "i",
+            },
+         }
+         this.query = this.query.find({ ...applicationStatus });
+      }
+      return this;
+   }
+
+   searchByStudentId() {
+      if (this.queryStr.student_id) {
+         const student_id = {
+            student_id: this.queryStr.student_id,
+         }
+         this.query = this.query.find({ ...student_id });
+      }
+      return this;
+   }
 }
 module.exports = ApiFeatures;

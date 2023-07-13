@@ -130,5 +130,18 @@ class ApiFeatures {
       }
       return this;
    }
+
+   searchByEngineerStatus() {
+      if (this.queryStr.engineerStatus) {
+         const engineerStatus = {
+            engineerStatus: {
+               $regex: this.queryStr.engineerStatus,
+               $options: "i",
+            },
+         }
+         this.query = this.query.find({ ...engineerStatus });
+      }
+      return this;
+   }
 }
 module.exports = ApiFeatures;

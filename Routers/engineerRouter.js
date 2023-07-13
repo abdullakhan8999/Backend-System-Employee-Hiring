@@ -15,7 +15,7 @@ router
    .route('/admin/get/engineerDetailed/:role')
    .get(
       isAuthenticatedUser,
-      authorizedRoles(Roles.ADMIN),
+      authorizedRoles(Roles.ADMIN, Roles.ENGINEER),
       getEngineerDetails
    )
 

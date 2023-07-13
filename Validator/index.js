@@ -12,7 +12,6 @@ module.exports.ValidateUpdateEngineerDetails = require('./ValidateUpdateEngineer
 module.exports.ValidateUpdateUserPassword = require('./ValidateUpdateUserPassword')
 module.exports.ValidateUpdateJobDetails = require('./ValidateUpdateJobDetails')
 module.exports.ValidateUpdateApplicationStatus = require('./ValidateUpdateApplicationStatus')
-module.exports.ValidateDeleteJobById = require('./ValidateDeleteJobById')
 module.exports.ValidateDeleteApplicationById = require('./ValidateDeleteApplicationById')
 module.exports.validateTicketStatus = require('./validateTicketStatus')
 module.exports.isStatusExist = require('./isStatusExist')

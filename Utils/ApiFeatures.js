@@ -81,6 +81,7 @@ class ApiFeatures {
       }
       return this;
    }
+
    filterByExperience() {
       if (this.queryStr.experience) {
          const experience = {
@@ -93,6 +94,7 @@ class ApiFeatures {
       }
       return this;
    }
+
    filterBySalary() {
       if (this.queryStr.salary) {
          const salary = {

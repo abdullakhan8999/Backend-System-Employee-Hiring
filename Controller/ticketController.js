@@ -1,5 +1,5 @@
 const models = require("../Models");
-const { validateTicketStatus } = require("../Validator");
+const { validateTicketStatus, IdValidation } = require("../Validator");
 const sendEmail = require("../Utils/NotificationClient");
 const { engineerStatus } = require("../Constants/rolesConstants");
 
@@ -12,9 +12,10 @@ const CreteTicket = async (req, res, next) => {
       ticketPriority: req.body.ticketPriority,
       description: req.body.description,
       status: req.body.status,
-      reporter: req.user._id, //this is coming from authJwt middleware
-      roleReporter: req.user.role //this is coming from authJwt middleware
+      reporter: req.user._id,
+      roleReporter: req.user.role
    }
+
    // Assign the ticket to the admin
    const engineer = await models.engineer.findOne({
       engineerStatus: engineerStatus.approved
@@ -44,20 +45,25 @@ const CreteTicket = async (req, res, next) => {
 
 
 
-   if (req.user.role === "engineer") {
-      engineer.ticketCreated.push(ticket._id);
-   } else if (req.user.role === "student") {
-      const student = await models.student.findById(req.user._id);
-      student.ticketCreated.push(ticket._id);
-      await student.save()
-   } else if (req.user.role === "company") {
-      const company = await models.company.findById(req.user.id);
-      company.ticketCreated.push(ticket._id);
-      await company.save()
-   } else {
-      const admin = await models.admin.findById(req.user.id);
-      admin.ticketCreated.push(ticket._id);
-      await admin.save()
+   switch (req.user.role) {
+      case "engineer":
+         engineer.ticketCreated.push(ticket._id);
+         break;
+      case "student":
+         const student = await models.student.findById(req.user._id);
+         student.ticketCreated.push(ticket._id);
+         await student.save();
+         break;
+      case "company":
+         const company = await models.company.findById(req.user.id);
+         company.ticketCreated.push(ticket._id);
+         await company.save();
+         break;
+      default:
+         const admin = await models.admin.findById(req.user.id);
+         admin.ticketCreated.push(ticket._id);
+         await admin.save();
+         break;
    }
 
    engineer.ticketAssigned.push(ticket._id)
@@ -134,21 +140,15 @@ const getAllTicket = async (req, res) => {
 
 // Get ticket
 const getTicket = async (req, res) => {
-   let ticket_id = req.body.ticket_id;
    // validate user
-   if (!req.user.id || !ticket_id) {
-      return res.status(400)
-         .json({
-            status: "failed",
-            message: "Bad Request!"
-         })
+   if (!req.body.ticket_id || req.body.ticket_id.length !== 24) {
+      return IdValidation(res);
    }
    try {
-      let ticket = await models.ticket.findById(ticket_id);
-
+      //find ticket
+      let ticket = await models.ticket.findById(req.body.ticket_id);
       if (ticket && ticket.reporter === req.user.id || req.user.role === "admin" || req.user.role === "engineer") {
-         return res
-            .status(200)
+         return res.status(200)
             .json({
                status: "success",
                ticket
@@ -171,16 +171,12 @@ const getTicket = async (req, res) => {
 
 // Update Ticket
 const UpdateTicket = async (req, res) => {
+   // validate user
+   if (!req.body.ticket_id || req.body.ticket_id.length !== 24) {
+      return IdValidation(res);
+   }
    let ticket_id = req.body.ticket_id;
 
-   // validate ticket
-   if (!ticket_id) {
-      return res.status(400)
-         .json({
-            status: "failed",
-            message: "Bad Request!"
-         })
-   }
    // validate ticket status
    let isError = validateTicketStatus(req.body.status);
    if (isError) {

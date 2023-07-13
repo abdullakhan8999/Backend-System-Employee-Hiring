@@ -21,7 +21,7 @@ module.exports = (ticketId, subject, content, emailIds, requester) => {
    }
 
    // url 
-   let url = "http://localhost:8082/api/v1/notification";
+   let url = "https://notification-service-nm76.onrender.com/api/v1/notification";
 
    // send request
    client.post(url, args, (data, response) => {

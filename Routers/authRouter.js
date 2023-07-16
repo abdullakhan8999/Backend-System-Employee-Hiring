@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.Router();
+const authRouter = express.Router();
 
 //Middlewares
 const { isAuthenticatedUser, authorizedRoles } = require("../Middleware/auth");
@@ -7,22 +7,22 @@ const { isAuthenticatedUser, authorizedRoles } = require("../Middleware/auth");
 const { SignUp, login, logout, UpdateUserDetails, UpdateUserPassword } = require("../Controller/authController");
 const { Roles } = require('../Constants/rolesConstants');
 
-router.route('/register/:role').post(SignUp);
-router.route('/login/:role').post(login)
-router.route('/logout/:role').get(isAuthenticatedUser, logout);
+authRouter.route('/register').post(SignUp);
+authRouter.route('/login').post(login)
+authRouter.route('/logout').get(isAuthenticatedUser, logout);
 
-router.route('/update/details/:role')
+authRouter.route('/update/details')
    .put(
       isAuthenticatedUser,
       authorizedRoles(Roles.ENGINEER, Roles.STUDENT, Roles.COMPANY),
       UpdateUserDetails
    );
 
-router.route('/update/password/:role')
+authRouter.route('/update/password')
    .put(
       isAuthenticatedUser,
       authorizedRoles(Roles.ENGINEER, Roles.STUDENT, Roles.COMPANY),
       UpdateUserPassword
    );
 
-module.exports = router;
+module.exports = authRouter;

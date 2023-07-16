@@ -1,11 +1,11 @@
 const express = require('express');
-const router = express.Router();
+const ticketRouter = express.Router();
 const { isAuthenticatedUser, authorizedRoles, validateTicketRequestBody } = require("../Middleware/auth");
 const { CreteTicket, UpdateTicket, getAllTicket, getTicket } = require("../Controller/ticketController.js");
 const { Roles } = require('../Constants/rolesConstants');
 
 // create Ticket
-router
+ticketRouter
    .route('/create/tickets/:role')
    .post(
       isAuthenticatedUser,
@@ -15,7 +15,7 @@ router
    )
 
 // get all Tickets
-router
+ticketRouter
    .route('/get_all/ticket/:role')
    .get(
       isAuthenticatedUser,
@@ -24,7 +24,7 @@ router
    )
 
 // get a Ticket
-router
+ticketRouter
    .route('/get/ticket/:role')
    .get(
       isAuthenticatedUser,
@@ -33,7 +33,7 @@ router
    )
 
 // update Ticket
-router
+ticketRouter
    .route('/update/ticket/:role')
    .put(
       isAuthenticatedUser,
@@ -41,4 +41,4 @@ router
       UpdateTicket
    )
 
-module.exports = router;
+module.exports = ticketRouter;

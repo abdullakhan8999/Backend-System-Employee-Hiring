@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.Router();
+const jobRouter = express.Router();
 const { Roles } = require("../Constants/rolesConstants");
 
 // Middlewares
@@ -17,7 +17,7 @@ const {
 //Job
 
 //create a new job
-router
+jobRouter
    .route('/company/create/job/:role')
    .post(
       isAuthenticatedUser,
@@ -26,7 +26,7 @@ router
    );
 
 //get all job
-router
+jobRouter
    .route('/jobs/:role')
    .get(
       isAuthenticatedUser,
@@ -35,7 +35,7 @@ router
    );
 
 //get job by id
-router
+jobRouter
    .route('/job_id/:role')
    .get(
       isAuthenticatedUser,
@@ -44,7 +44,7 @@ router
    );
 
 //update job by id
-router
+jobRouter
    .route('/company/update/job/:role')
    .put(
       isAuthenticatedUser,
@@ -53,7 +53,7 @@ router
    );
 
 //delete job by id
-router
+jobRouter
    .route('/company/delete/job/:role')
    .delete(
       isAuthenticatedUser,
@@ -61,4 +61,4 @@ router
       deleteJobById
    );
 
-module.exports = router;
+module.exports = jobRouter;

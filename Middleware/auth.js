@@ -1,57 +1,30 @@
 const jwt = require("jsonwebtoken");
 const models = require("../Models");
-const { ROLES } = require("../Constants/rolesConstants");
+const { Roles } = require("../Constants/rolesConstants");
 
 exports.isAuthenticatedUser = async (req, res, next) => {
-   const role = req.params.role;
-   const tokenCookieName = role;
+   const { token } = req.cookies;
 
-   if (ROLES.includes(role)) {
-
-      const { [tokenCookieName]: token } = req.cookies;
-
-      if (!token) {
-         return res.status(401).json({
-            status: 'failure',
-            message: 'Not authenticated to access this route',
-         });
-      }
-
+   if (token) {
       // find user by id
       const decoded = await jwt.verify(token, process.env.JWT_SECRET);
 
 
       // providing user in req object
-      if (decoded.role === "admin") {
-         req.user = await models.admin.findById(decoded.id);
-         if (!req.user) {
-            return res.status(401).json({
-               status: 'failure',
-               message: 'Not authenticated to access this route',
-            });
-         }
-      } else if (decoded.role === "student") {
-         req.user = await models.student.findById(decoded.id);
-         if (!req.user) {
-            return res.status(401).json({
-               status: 'failure',
-               message: 'Not authenticated to access this route',
-            });
-         }
-      } else if (decoded.role === "company") {
+      if (decoded.role === Roles.COMPANY) {
          req.user = await models.company.findById(decoded.id);
          if (!req.user) {
             return res.status(401).json({
                status: 'failure',
-               message: 'Not authenticated to access this route',
+               message: "Please Login to access this resource",
             });
          }
       } else {
-         req.user = await models.engineer.findById(decoded.id);
+         req.user = await models.user.findById(decoded.id);
          if (!req.user) {
             return res.status(401).json({
                status: 'failure',
-               message: 'Not authenticated to access this route',
+               message: "Please Login to access this resource",
             });
          }
       }
@@ -59,7 +32,7 @@ exports.isAuthenticatedUser = async (req, res, next) => {
    } else {
       return res.status(401).json({
          status: 'failure',
-         message: 'Not authenticated to access this route',
+         message: "Please Login to access this resource",
       });
    }
 }

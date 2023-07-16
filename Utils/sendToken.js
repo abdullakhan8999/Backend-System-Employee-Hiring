@@ -1,5 +1,10 @@
+const RESPONSES = require("../Constants/RESPONSES");
+
 const sendToken = async (user, statusCode, res) => {
   try {
+    const token = await user.getJwtToken();
+
+    // options for cookie
     const options = {
       expires: new Date(
         Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
@@ -7,50 +12,21 @@ const sendToken = async (user, statusCode, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
     };
-    const token = await user.getJwtToken();
-    const cookieName = user.role;
 
-    if (user.role === 'company') {
-      res.status(statusCode).cookie(cookieName, token, options).json({
-        status: "success",
-        token,
-        _id: user._id,
-        companyName: user.companyName,
-        description: user.description,
-        location: user.location,
-        email: user.email,
-        role: user.role,
-        jobs: user.jobs,
-        jobApplications: user.jobApplications,
-      });
-    } else if (user.role === 'engineer') {
-      res.status(statusCode).cookie(cookieName, token, options).json({
-        status: "success",
-        token,
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-        engineerStatus: user.engineerStatus
-      });
+    // resolve response depending on user
+    let response;
+    if (user.role === "company") {
+      response = { ...RESPONSES.COMPANY.CREATE_SUCCESS, user, token };
     } else {
-      res.status(statusCode).cookie(cookieName, token, options).json({
-        status: "success",
-        token,
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-      });
+      response = { ...RESPONSES.USER.CREATE_SUCCESS, user, token };
     }
+    // console.log(response);
+    res.status(statusCode).cookie("token", token, options).json(response);
   } catch (error) {
-    res.status(500).json({
-      status: "failure",
-      message: "Error in sending token" + error,
-    });
+    console.log("Error creating token: " + error);
+    res.status(500).json(RESPONSES.ERROR);
   }
 };
 
 module.exports = sendToken;
+

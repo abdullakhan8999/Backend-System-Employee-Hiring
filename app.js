@@ -4,6 +4,9 @@ const cookiesParser = require("cookie-parser");
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
+//routers 
+const routers = require("./Routers");
+
 //middleware
 app.use(express.json());
 app.use(cookiesParser());
@@ -15,9 +18,10 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use("/api/v1", require("./Routers/authRouter"));
 app.use("/api/v1", require("./Routers/adminRouter"));
 app.use("/api/v1", require("./Routers/engineerRouter"));
-app.use("/api/v1", require("./Routers/jobRouter"));
-app.use("/api/v1", require("./Routers/jobApplicationRouter"));
-app.use("/api/v1", require("./Routers/ticketRouter"));
+app.use("/api/v1", routers.jobRouter);
+app.use("/api/v1", routers.jobApplicationRouter);
+app.use("/api/v1", routers.ticketRouter);
+app.use("/api/v1", routers.userRouter);
 
 
 

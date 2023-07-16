@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.Router();
+const jobApplicationRouter = express.Router();
 const { Roles } = require("../Constants/rolesConstants");
 
 // Middlewares
@@ -17,7 +17,7 @@ const {
 
 
 //apply for the job
-router
+jobApplicationRouter
    .route('/apply/job/:role')
    .post(
       isAuthenticatedUser,
@@ -26,7 +26,7 @@ router
    );
 
 // get all job applications
-router
+jobApplicationRouter
    .route('/company/job/applications/:role')
    .get(
       isAuthenticatedUser,
@@ -35,7 +35,7 @@ router
    );
 
 // get job applications
-router
+jobApplicationRouter
    .route('/company/job/application/:role')
    .get(
       isAuthenticatedUser,
@@ -44,7 +44,7 @@ router
    );
 
 // update job applications
-router
+jobApplicationRouter
    .route('/company/update/jobApplication/:role')
    .put(
       isAuthenticatedUser,
@@ -53,7 +53,7 @@ router
    );
 
 //delete job by id
-router
+jobApplicationRouter
    .route('/delete/job/application/:role')
    .delete(
       isAuthenticatedUser,
@@ -61,4 +61,4 @@ router
       deleteApplicationById
    );
 
-module.exports = router;
+module.exports = jobApplicationRouter;

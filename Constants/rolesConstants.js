@@ -11,8 +11,12 @@ module.exports.COMPANY = COMPANY;
 module.exports.ENGINEER = ENGINEER;
 module.exports.ROLES = [ADMIN, STUDENT, COMPANY, ENGINEER];
 module.exports.Roles = { ADMIN, STUDENT, COMPANY, ENGINEER };
+module.exports.userStatus = {
+   PENDING: "pending",
+   APPROVED: "approved",
+   REJECTED: "rejected",
+};
 module.exports.engineerStatus = {
    pending: "PENDING",
    approved: "APPROVED",
-   rejected: "REJECTED"
 };

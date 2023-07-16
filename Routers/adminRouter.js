@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.Router();
+const adminRouter = express.Router();
 const { Roles } = require("../Constants/rolesConstants");
 
 // Middlewares
@@ -15,29 +15,29 @@ const {
 } = require("../Controller/adminController.js")
 
 
-router.route('/admin/students/:role')
+adminRouter.route('/admin/students/:role')
    .get(isAuthenticatedUser, authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER), getAllStudents);
 
-router.route('/companies/:role')
+adminRouter.route('/companies/:role')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
       getAllCompanies
    );
 
-router.route('/student/details/:role')
+adminRouter.route('/student/details/:role')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
       getStudentDetails);
 
-router.route('/company/details/:role')
+adminRouter.route('/company/details/:role')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
       getCompanyDetails);
 
-router.route('/delete/user/:role')
+adminRouter.route('/delete/user/:role')
    .delete(
       isAuthenticatedUser,
       authorizedRoles(Roles.ADMIN, Roles.ENGINEER),
@@ -45,4 +45,4 @@ router.route('/delete/user/:role')
    );
 
 
-module.exports = router;
+module.exports = adminRouter;

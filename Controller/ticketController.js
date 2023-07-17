@@ -1,7 +1,7 @@
 const models = require("../Models");
 const { validateTicketStatus, IdValidation } = require("../Validator");
 const sendEmail = require("../Utils/NotificationClient");
-const { engineerStatus } = require("../Constants/rolesConstants");
+const { engineerStatus, userStatus, Roles } = require("../Constants/rolesConstants");
 
 // Crete Ticket
 const CreteTicket = async (req, res, next) => {
@@ -17,8 +17,9 @@ const CreteTicket = async (req, res, next) => {
    }
 
    // Assign the ticket to the admin
-   const engineer = await models.engineer.findOne({
-      engineerStatus: engineerStatus.approved
+   const engineer = await models.user.findOne({
+      role: Roles.ENGINEER,
+      userStatus: userStatus.APPROVED,
    })
 
    if (!engineer) {
@@ -49,20 +50,15 @@ const CreteTicket = async (req, res, next) => {
       case "engineer":
          engineer.ticketCreated.push(ticket._id);
          break;
-      case "student":
-         const student = await models.student.findById(req.user._id);
-         student.ticketCreated.push(ticket._id);
-         await student.save();
-         break;
       case "company":
          const company = await models.company.findById(req.user.id);
          company.ticketCreated.push(ticket._id);
          await company.save();
          break;
       default:
-         const admin = await models.admin.findById(req.user.id);
-         admin.ticketCreated.push(ticket._id);
-         await admin.save();
+         const user = await models.user.findById(req.user.id);
+         user.ticketCreated.push(ticket._id);
+         await user.save();
          break;
    }
 
@@ -81,10 +77,10 @@ const CreteTicket = async (req, res, next) => {
 const getAllTicket = async (req, res) => {
    //query params object
    let queryObject = {};
+
    //query reporter
-   if (req.user.id !== undefined) {
-      queryObject.reporter = req.user.id
-   }
+   queryObject.reporter = req.user.id
+
    if (req.query.status) {
       req.query.status = req.query.status.toUpperCase()
    }
@@ -205,7 +201,8 @@ const UpdateTicket = async (req, res) => {
          ticket.status = req.body.status ? req.body.status : ticket.status
          await ticket.save()
 
-         const engineer = await models.engineer.findOne({
+         const engineer = await models.user.findOne({
+            role: Roles.ENGINEER,
             engineerStatus: engineerStatus.approved
          })
 

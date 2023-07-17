@@ -6,7 +6,7 @@ const { Roles } = require('../Constants/rolesConstants');
 
 // create Ticket
 ticketRouter
-   .route('/create/tickets/:role')
+   .route('/create/tickets')
    .post(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
@@ -16,7 +16,7 @@ ticketRouter
 
 // get all Tickets
 ticketRouter
-   .route('/get_all/ticket/:role')
+   .route('/get_all/ticket')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
@@ -25,7 +25,7 @@ ticketRouter
 
 // get a Ticket
 ticketRouter
-   .route('/get/ticket/:role')
+   .route('/get/ticket')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
@@ -34,7 +34,7 @@ ticketRouter
 
 // update Ticket
 ticketRouter
-   .route('/update/ticket/:role')
+   .route('/update/ticket')
    .put(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),

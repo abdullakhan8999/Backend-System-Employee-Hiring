@@ -15,7 +15,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 // router import
-app.use("/api/v1", require("./Routers/adminRouter"));
+app.use("/api/v1", routers.adminRouter);
 app.use("/api/v1", routers.authRouter);
 app.use("/api/v1", routers.jobRouter);
 app.use("/api/v1", routers.jobApplicationRouter);

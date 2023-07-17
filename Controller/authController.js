@@ -33,6 +33,12 @@ const SignUp = async (req, res, next) => {
          });
       }
 
+      //password validation
+      if (req.body.password.length < 8) {
+         console.log("Password should be at least 8 characters");
+         return res.status(400).json(RESPONSES.VALIDATION_FAILED);
+      }
+
       //if requested user is company 
       if (req.body.role == "company") {
 
@@ -45,7 +51,7 @@ const SignUp = async (req, res, next) => {
 
          // Create a new company
          await models.company.create({
-            companyName: req.body.companyName,
+            name: req.body.name,
             description: req.body.description,
             email: req.body.email,
             location: req.body.location,
@@ -172,7 +178,7 @@ const UpdateUserDetails = async (req, res, next) => {
          }
 
          // Update company fields
-         company.companyName = req.body.companyName || company.companyName;
+         company.name = req.body.name || company.name;
          company.description = req.body.description || company.description;
          company.location = req.body.location || company.location;
          company.email = req.body.email || company.email;

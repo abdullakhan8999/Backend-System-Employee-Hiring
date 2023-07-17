@@ -4,32 +4,6 @@ class ApiFeatures {
       this.queryStr = queryStr;
    }
 
-   searchByFirstName() {
-      if (this.queryStr.firstName) {
-         const firstName = {
-            firstName: {
-               $regex: this.queryStr.firstName,
-               $options: "i",
-            },
-         }
-         this.query = this.query.find({ ...firstName });
-      }
-      return this;
-   }
-
-   searchByEmail() {
-      if (this.queryStr.email) {
-         const email = {
-            email: {
-               $regex: this.queryStr.email,
-               $options: "i",
-            },
-         }
-         this.query = this.query.find({ ...email });
-      }
-      return this;
-   }
-
    searchByTitle() {
       if (this.queryStr.title) {
          const title = {
@@ -43,20 +17,20 @@ class ApiFeatures {
       return this;
    }
 
-   searchByCompanyName() {
-      if (this.queryStr.companyName) {
-         const companyName = {
-            companyName: {
-               $regex: this.queryStr.companyName,
+   searchByName() {
+      if (this.queryStr.name) {
+         const name = {
+            name: {
+               $regex: this.queryStr.name,
                $options: "i",
             },
          }
-         this.query = this.query.find({ ...companyName });
+         this.query = this.query.find({ ...name });
       }
       return this;
    }
 
-   searchByCompany() {
+   searchByCompany_name() {
       if (this.queryStr.company_name) {
          const company_name = {
             company_name: {
@@ -131,15 +105,41 @@ class ApiFeatures {
       return this;
    }
 
-   searchByEngineerStatus() {
-      if (this.queryStr.engineerStatus) {
-         const engineerStatus = {
-            engineerStatus: {
-               $regex: this.queryStr.engineerStatus,
+   searchByUserStatus() {
+      if (this.queryStr.userStatus) {
+         const userStatus = {
+            userStatus: {
+               $regex: this.queryStr.userStatus,
                $options: "i",
             },
          }
-         this.query = this.query.find({ ...engineerStatus });
+         this.query = this.query.find({ ...userStatus });
+      }
+      return this;
+   }
+
+   searchByEmail() {
+      if (this.queryStr.email) {
+         const email = {
+            email: {
+               $regex: this.queryStr.email,
+               $options: "i",
+            },
+         }
+         this.query = this.query.find({ ...email });
+      }
+      return this;
+   }
+
+   searchByRole() {
+      if (this.queryStr.role) {
+         const role = {
+            role: {
+               $regex: this.queryStr.role,
+               $options: "i",
+            },
+         }
+         this.query = this.query.find({ ...role });
       }
       return this;
    }

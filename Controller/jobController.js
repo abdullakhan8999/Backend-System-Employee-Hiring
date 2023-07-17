@@ -5,6 +5,7 @@ const {
 } = require("../Validator");
 const ApiFeatures = require("../Utils/ApiFeatures");
 const { JOB_STATUSES, JOB_APPLICATION_STATUSES } = require("../Constants/jobApplicationConstants");
+const RESPONSES = require("../Constants/RESPONSES");
 
 // jobs 
 // create a new job
@@ -12,17 +13,15 @@ const createJob = async (req, res, next) => {
    // req body validation
    let { error } = await ValidateJob(req.body);
    if (error) {
-      return res.status(400).json({
-         status: "failure",
-         message: 'Please enter valid details. ' + error
-      });
+      console.log(error.details[0].message);
+      return res.status(400).json(RESPONSES.VALIDATION_FAILED);
    }
 
    let {
       title,
       description,
-      company_id,
-      company_name,
+      company_id = req.user.id,
+      company_name = req.user.name,
       location,
       requirement,
       experience,
@@ -34,23 +33,21 @@ const createJob = async (req, res, next) => {
 
    // Validate company_id length
    if (!company_id || company_id.length !== 24) {
+      console.log("Invalid company:", company_id);
       return IdValidation(res);
    }
 
    // Check if the company exists
    const isCompany = await models.company.findById(company_id);
    if (!isCompany) {
-      return res.status(404).json({
-         status: "failed",
-         message: "Company not found.",
-      });
+      console.log("Company not found / Invalid company:", company_id);
+      return res.status(404).json(RESPONSES.VALIDATION_FAILED);
    }
-   if (isCompany.companyName != company_name) {
-      return res.status(404).json({
-         status: "failed",
-         message: "Enter valid company name",
-      });
+   if (isCompany.name != company_name) {
+      console.log("Enter valid company name");
+      return res.status(404).json(RESPONSES.VALIDATION_FAILED);
    }
+
    hiring_status = hiring_status.toLowerCase()
    if (!Object.values(JOB_STATUSES).includes(hiring_status.toLowerCase())) {
       return res.status(404).json({
@@ -79,16 +76,11 @@ const createJob = async (req, res, next) => {
       await isCompany.save();
 
       //response
-      res.status(200).json({
-         status: 'success',
-         message: 'Job created successfully',
-         job
-      });
+      let response = { ...RESPONSES.JOB.CREATE_SUCCESS, job }
+      res.status(200).json(response);
    } catch (error) {
-      res.status(500).json({
-         status: 'failed',
-         message: 'Internal error!' + error,
-      });
+      console.log("Error with creating job: " + error);
+      res.status(500).json(RESPONSES.JOB.CREATE_FAILED);
    }
 }
 
@@ -98,34 +90,28 @@ const getAllJobs = async (req, res, next) => {
       // Check if there is not query parameters
       if (Object.keys(req.query).length === 0) {
          const jobs = await models.job.find().exec();
-         return res.status(200).json({
-            status: 'success',
-            results: jobs.length,
-            jobs
-         });
+
+         let results = jobs.length;
+         let response = { ...RESPONSES.JOB.GET_ALL_SUCCESS, results, jobs }
+         return res.status(200).json(response);
       }
 
       // else return query results
       const apiFeatures = new ApiFeatures(models.job.find(), req.query)
          .searchByTitle()
-         .searchByCompany()
+         .searchByCompany_name()
          .searchByLocation()
          .filterByExperience()
          .filterBySalary();
 
       const jobs = await apiFeatures.query.exec();
 
-      res.status(200).json({
-         status: 'success',
-         results: jobs.length,
-         jobs
-      });
+      let results = jobs.length;
+      let response = { ...RESPONSES.JOB.GET_ALL_SUCCESS, results, jobs }
+      res.status(200).json(response);
    } catch (error) {
-      console.error(error);
-      res.status(500).json({
-         status: 'error',
-         message: 'Internal server error',
-      });
+      console.log("Error while getting jobs", error);
+      res.status(500).json(RESPONSES.JOB.GET_ALL_FAILED);
    }
 };
 
@@ -134,6 +120,7 @@ const getJobDetailsId = async (req, res, next) => {
    try {
       //check for id validation
       if (!req.body.jobId || req.body.jobId.length !== 24) {
+         console.log("Invalid job id", req.body.jobId);
          return IdValidation(res);
       }
 
@@ -145,22 +132,16 @@ const getJobDetailsId = async (req, res, next) => {
 
       // if not found
       if (!job) {
-         return res.status(404).json({
-            status: 'failed',
-            message: 'Job not found for jobId: ' + jobId,
-         })
+         console.log("Job not found");
+         return res.status(404).json(RESPONSES.JOB.GET_DETAILS_FAILED)
       }
 
       // else send the job
-      res.status(200).json({
-         status: 'success',
-         job
-      })
+      let response = { ...RESPONSES.JOB.GET_DETAILS_SUCCESS, job };
+      res.status(200).json(response);
    } catch (error) {
-      return res.status(500).json({
-         status: "failed",
-         message: "Internal error:" + error,
-      });
+      console.log("Error while sending job", error);
+      return res.status(500).json(RESPONSES.JOB.GET_DETAILS_FAILED);
    }
 }
 
@@ -168,31 +149,29 @@ const getJobDetailsId = async (req, res, next) => {
 const updateJobDetailsId = async (req, res, next) => {
    try {
       //check for id validation
-      if (!req.body._id || req.body._id.length !== 24) {
+      if (!req.body.jobId || req.body.jobId.length !== 24) {
+         console.log("Invalid job id: " + req.body.jobId);
          return IdValidation(res)
       }
 
       //  Update job details
-      let job = await models.job.findById(req.body._id);
+      let job = await models.job.findById(req.body.jobId);
       // if not found
       if (!job) {
-         return res.status(404).json({
-            status: 'failed',
-            message: 'Job not found for jobId: ' + req.body._id,
-         })
+         console.log("Job not found");
+         let response = { ...RESPONSES.JOB.GET_DETAILS_FAILED, ID: req.body.jobID };
+         return res.status(404).json(response);
       }
 
       // Does company has this job? validation
       let company = await models.company.findById(req.user.id);
       if (!company) {
-         return res.status(404).json({
-            status: 'failed',
-            message: 'Company not found for jobId: ' + req.user.id,
-         })
+         let response = { ...RESPONSES.COMPANY.GET_DETAILS_FAILED };
+         return res.status(404).json(response);
       }
 
-      // let isJobExist = company.jobs.some((job) => job === req.body._id)
-      let isJobExist = company.jobs.includes(req.body._id);
+      // isJobExist is company
+      let isJobExist = company.jobs.includes(req.body.jobId);
       if (!isJobExist) {
          return res.status(400).json({
             status: "failed",
@@ -202,7 +181,8 @@ const updateJobDetailsId = async (req, res, next) => {
 
 
       // filter out valid fields
-      const invalidFields = Object.keys(req.body).filter(key => !job.schema.path(key));
+      let fields = ["jobId", "title", "description", "location", "vacancies", "requirement", "experience", "salary"]
+      const invalidFields = Object.keys(req.body).filter(key => !fields.includes(key));
       // invalidField has any invalid fields
       if (invalidFields.length > 0) {
          return res.status(400).json({
@@ -233,6 +213,7 @@ const updateJobDetailsId = async (req, res, next) => {
          job
       })
    } catch (err) {
+      console.log("Error while updating job", err);
       return res.status(500).json({
          status: "failed",
          message: "Internal error:" + err,
@@ -244,12 +225,12 @@ const deleteJobById = async (req, res, next) => {
    // Delete job
    try {
       //check for id validation
-      if (!req.body.job_id || req.body.job_id.length !== 24) {
+      if (!req.body.jobId || req.body.jobId.length !== 24) {
          return IdValidation(res);
       }
 
       // Find job with job id
-      const job = await models.job.findById(req.body.job_id);
+      const job = await models.job.findById(req.body.jobId);
       // if Job not found
       if (!job) {
          return res.status(404).json({
@@ -268,7 +249,7 @@ const deleteJobById = async (req, res, next) => {
       }
 
       // let isJobExist = company.jobs.some((job) => job === req.body._id)
-      let isJobExist = company.jobs.includes(req.body.job_id);
+      let isJobExist = company.jobs.includes(req.body.jobId);
       if (!isJobExist) {
          return res.status(400).json({
             status: "failed",
@@ -280,7 +261,7 @@ const deleteJobById = async (req, res, next) => {
       await models.job.deleteOne({ _id: job._id });
 
       // Update job applications
-      let jobApplications = await models.jobApplications.find({ job_id: job._id });
+      let jobApplications = await models.jobApplications.find({ jobId: job._id });
       jobApplications.map(
          async (application) => {
             application.applicationStatus = JOB_APPLICATION_STATUSES.CLOSED

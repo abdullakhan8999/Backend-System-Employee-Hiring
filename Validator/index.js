@@ -1,5 +1,4 @@
 module.exports.isEmailExist = require('./isEmailExist')
-module.exports.isPhoneExist = require('./isPhoneExist')
 module.exports.isUserExist = require('./isUserExist')
 module.exports.ValidateSignUp = require('./ValidateSignUp')
 module.exports.ValidateSignIn = require('./ValidateSignIn')

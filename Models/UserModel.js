@@ -43,6 +43,10 @@ const userSchema = mongoose.Schema({
       type: [mongoose.SchemaTypes.ObjectId],
       ref: "Ticket"
    },
+   appliedJobs: {
+      type: [mongoose.SchemaTypes.ObjectId],
+      ref: "job"
+   },
    createdAt: {
       type: Date,
       immutable: true,

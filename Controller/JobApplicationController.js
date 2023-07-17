@@ -14,20 +14,12 @@ const applyForJob = async (req, res, next) => {
       return IdValidation(res);
    };
 
-   if (!req.body.title) {
-      return await sendReferenceError(400, res, "Job Title is required");
-   }
 
-   const { job_id, title } = req.body;
+   const { job_id } = req.body;
    const student_id = req.user.id;
 
-   const student = await models.student.findById(req.user.id);
-   if (!student) {
-      return res.status(404).json({
-         status: "failed",
-         message: "Student not found.",
-      });
-   }
+   const student = await models.user.findById(req.user.id);
+
    const job = await models.job.findById(job_id);
    if (!job) {
       return res.status(404).json({
@@ -52,13 +44,6 @@ const applyForJob = async (req, res, next) => {
       });
    }
 
-   //Check if the company is title
-   if (job.title !== title) {
-      return res.status(400).json({
-         status: "failed",
-         message: "Incorrect job title.",
-      });
-   }
 
    // Associate job application with the company
    const company = await models.company.findById(job.company_id);
@@ -73,7 +58,7 @@ const applyForJob = async (req, res, next) => {
    const jobApplication = await models.jobApplications.create({
       job_id,
       student_id,
-      title
+      title: job.title
    });
 
    //Update job application, student and company
@@ -118,8 +103,7 @@ const getAllApplication = async (req, res, next) => {
 
       applications = await apiFeatures.query.exec();
 
-      res
-         .status(200)
+      res.status(200)
          .json({
             status: 'success',
             results: applications.length,
@@ -249,7 +233,7 @@ const updateApplicationStatus = async (req, res, next) => {
       };
 
       //check if the applied student is there or not 
-      let student = await models.student.findById(application.student_id);
+      let student = await models.user.findById(application.student_id);
       if (!student) {
          return res.status(400).json({
             status: "Failed",
@@ -267,14 +251,11 @@ const updateApplicationStatus = async (req, res, next) => {
             status: 'success',
             message: 'Application updated successfully',
             data: application
-
          })
-
    } catch (err) {
       return res.status(404).json({
          status: "Failed",
          message: "Error in updating job application: " + err,
-
       });
    }
 }
@@ -310,7 +291,7 @@ const deleteApplicationById = async (req, res, next) => {
             await job.save();
 
             let studentId = await application.student_id.toString();
-            let student = await models.student.findById(studentId);
+            let student = await models.user.findById(studentId);
             // Apply filter condition student
             let filStuJobApp = await student.appliedJobs.filter((JOB) => {
                return JOB.toString() !== jobId;

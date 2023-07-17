@@ -18,7 +18,7 @@ const {
 
 //create a new job
 jobRouter
-   .route('/company/create/job/:role')
+   .route('/company/create/job')
    .post(
       isAuthenticatedUser,
       authorizedRoles(Roles.COMPANY),
@@ -27,7 +27,7 @@ jobRouter
 
 //get all job
 jobRouter
-   .route('/jobs/:role')
+   .route('/jobs')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
@@ -36,7 +36,7 @@ jobRouter
 
 //get job by id
 jobRouter
-   .route('/job_id/:role')
+   .route('/job_id')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
@@ -45,7 +45,7 @@ jobRouter
 
 //update job by id
 jobRouter
-   .route('/company/update/job/:role')
+   .route('/company/update/job')
    .put(
       isAuthenticatedUser,
       authorizedRoles(Roles.COMPANY),
@@ -54,7 +54,7 @@ jobRouter
 
 //delete job by id
 jobRouter
-   .route('/company/delete/job/:role')
+   .route('/company/delete/job')
    .delete(
       isAuthenticatedUser,
       authorizedRoles(Roles.ADMIN, Roles.COMPANY),

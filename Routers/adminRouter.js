@@ -7,42 +7,59 @@ const { isAuthenticatedUser, authorizedRoles } = require("../Middleware/auth");
 
 // Controllers
 const {
-   getAllStudents,
-   getAllCompanies,
-   getStudentDetails,
-   getCompanyDetails,
-   deleteUser
+   deleteUser,
+   UpdateEngineerStatus,
+   deleteEngineer,
+   getAllEngineer,
+   getEngineerDetails
 } = require("../Controller/adminController.js")
 
-
-adminRouter.route('/admin/students/:role')
-   .get(isAuthenticatedUser, authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER), getAllStudents);
-
-adminRouter.route('/companies/:role')
+// get a Engineer
+adminRouter
+   .route('/get/engineerDetailed')
    .get(
       isAuthenticatedUser,
-      authorizedRoles(...Object.values(Roles)),
-      getAllCompanies
-   );
+      authorizedRoles(Roles.ADMIN, Roles.ENGINEER),
+      getEngineerDetails
+   )
 
-adminRouter.route('/student/details/:role')
-   .get(
+
+// Update Engineer
+adminRouter
+   .route('/admin/update/engineer/status')
+   .put(
       isAuthenticatedUser,
-      authorizedRoles(...Object.values(Roles)),
-      getStudentDetails);
+      authorizedRoles(Roles.ADMIN),
+      UpdateEngineerStatus
+   )
 
-adminRouter.route('/company/details/:role')
-   .get(
-      isAuthenticatedUser,
-      authorizedRoles(...Object.values(Roles)),
-      getCompanyDetails);
 
-adminRouter.route('/delete/user/:role')
+
+
+
+adminRouter.route('/delete/user')
    .delete(
       isAuthenticatedUser,
       authorizedRoles(Roles.ADMIN, Roles.ENGINEER),
       deleteUser
    );
+
+adminRouter.route('/admin/delete/engineer/')
+   .delete(
+      isAuthenticatedUser,
+      authorizedRoles(Roles.ADMIN),
+      deleteEngineer
+   )
+
+// get all Engineer
+adminRouter
+   .route('/admin/get/engineers')
+   .get(
+      isAuthenticatedUser,
+      authorizedRoles(Roles.ADMIN),
+      getAllEngineer
+   )
+
 
 
 module.exports = adminRouter;

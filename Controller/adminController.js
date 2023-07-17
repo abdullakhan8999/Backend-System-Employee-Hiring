@@ -1,225 +1,158 @@
+const RESPONSES = require("../Constants/RESPONSES");
+const { Roles } = require("../Constants/rolesConstants");
 const models = require("../Models");
 const ApiFeatures = require("../Utils/ApiFeatures");
 const sendReferenceError = require("../Utils/sendReferenceErrorRES");
-const { IdValidation } = require("../Validator");
+const { IdValidation, ValidateUpdateEngineerDetails, isStatusExist, isUserExist } = require("../Validator");
 
-const getAllStudents = async (req, res, next) => {
-
-   let students;
-   // Check if there are no query parameters, and return all jobs
-   if (Object.keys(req.query).length === 0) {
-      students = await models.student.find()
-      return res.status(200).json({
-         status: 'success',
-         message: "All students.",
-         results: students.length,
-         data: {
-            students,
-         },
-      });
-   };
-
-   // Query validation
-   let allowedKeys = ["firstName", "email"];
-   //query filter
-   const filteredQuery = Object.keys(req.query).filter(key =>
-      !allowedKeys.includes(key)
-   );
-   if (filteredQuery.length > 0) {
-      return res.status(400).json({
-         status: 'failed',
-         message: "Invalid search: " + filteredQuery.join(", ")
-      });
+//Update Engineer status
+const UpdateEngineerStatus = async (req, res, next) => {
+   //check input to update
+   let { error } = await ValidateUpdateEngineerDetails(req.body);
+   if (error) {
+      console.log(error.details[0].message);
+      return res.status(400).json(RESPONSES.VALIDATION_FAILED);
    }
 
-   // Request query
-   const apiFeatures = new ApiFeatures(models.student.find(), req.query)
-      .searchByFirstName()
-      .searchByEmail()
-
-   // Execute the final query
-   students = await apiFeatures.query;
-
-   res.status(200).json({
-      status: 'success',
-      results: students.length,
-      data: {
-         students,
-      },
-   });
-
-   next();
-}
-
-const getAllCompanies = async (req, res, next) => {
-   let companies;
-   // Check if there are no query parameters, and return all jobs
-   if (Object.keys(req.query).length === 0) {
-      companies = await models.company.find()
-      return res.status(200).json({
-         status: 'success',
-         message: "All companies.",
-         results: companies.length,
-         data: {
-            companies,
-         },
-      });
-   };
-
-   // Query validation
-   let allowedKeys = ["companyName", "location"];
-   //query filter
-   const filteredQuery = Object.keys(req.query).filter(key =>
-      !allowedKeys.includes(key)
-   );
-   if (filteredQuery.length > 0) {
-      return res.status(400).json({
-         status: 'failed',
-         message: "Invalid search: " + filteredQuery.join(", ")
-      });
+   //check for id validation
+   if (req.body.engineer_id.length !== 24) {
+      console.log("Enter valid Engineer id");
+      return IdValidation(res);
    }
 
-   // Request query
-   const apiFeatures = new ApiFeatures(models.company.find(), req.query)
-      .searchByCompanyName()
-      .searchByLocation()
-
-   // Execute the final query
-   companies = await apiFeatures.query;
-
-   res.status(200).json({
-      status: 'success',
-      results: companies.length,
-      data: {
-         companies,
-      },
-   });
-
-   next();
-}
-
-const getStudentDetails = async (req, res, next) => {
+   //validate status Code 
+   const StatusExist = await isStatusExist(req.body.engineerStatus);
+   if (StatusExist) {
+      console.log("Invalid engineer status:", req.body.engineerStatus);
+      return res.status(400).json({
+         status: "failed",
+         message: "Invalid status code: " + req.body.engineerStatus + ". Please provide a valid status code for the engineer.",
+      });
+   }
 
    try {
-      let student;
-      if (req.user.role === "student") {
-         student = await models.student.findById(req.user.id);
-         res
-            .status(200)
-            .json({
-               status: "success",
-               message: "Your details",
-               student: student
-            })
-      } else {
-         //check for id validation
-         if (!req.body.student_id || req.body.student_id.length !== 24) {
-            return IdValidation(res);
-         }
-
-         // Access studentId from request body
-         const studentId = req.body.student_id;
-
-         student = await models.student.findById(studentId);
-         if (student) {
-            res
-               .status(200)
-               .json({
-                  status: "success",
-                  message: "Student details",
-                  student: student
-               })
-         } else {
-            res.status(500).json({
-               status: "failed",
-               message: `Failed to find student with id ${studentId}`
-            })
-         }
+      // Find engineer
+      let engineer = await models.user.findById(req.body.engineer_id);
+      if (!engineer) {
+         console.log("Engineer not found");
+         return res.status(500).json(RESPONSES.USER.UPDATE_FAILED);
       }
+
+      // Update engineer
+      engineer.userStatus = req.body.engineerStatus;
+      await engineer.save();
+
+      // send response
+      let response = { ...RESPONSES.USER.UPDATE_SUCCESS, engineer }
+      res.status(200).json(response);
+   } catch (err) {
+      res.status(500).json(RESPONSES.USER.UPDATE_FAILED);
+   }
+}
+
+// Get all Engineers details
+const getAllEngineer = async (req, res, next) => {
+   try {
+      let engineers
+      // Check if there is not query parameters
+      if (Object.keys(req.query).length === 0) {
+         engineers = await models.user.find().exec();
+         let results = engineers.length;
+         let response = { ...RESPONSES.USER.GET_ALL_SUCCESS, results, engineers }
+         return res.status(200).json(response);
+      }
+
+      // else return query results
+      const apiFeatures = new ApiFeatures(models.user.find(), req.query)
+         .searchByUserStatus()
+         .searchByEmail()
+         .searchByRole()
+      engineers = await apiFeatures.query.exec();
+
+      // send response
+      let results = engineers.length;
+      let response = { ...RESPONSES.USER.GET_ALL_SUCCESS, results, engineers }
+      res.status(200).json(response);
+   } catch (error) {
+      console.log("Error while getting all engineers:", error);
+      return res.status(400).json(RESPONSES.USER.GET_ALL_FAILED)
+   }
+   next();
+}
+
+//Delete Engineer 
+const deleteEngineer = async (req, res, next) => {
+   //check for id validation
+   if (!req.body.engineer_id || req.body.engineer_id.length !== 24) {
+      return IdValidation(res);
+   }
+
+   try {
+      //find the engineer
+      let engineer = await models.user.findById(req.body.engineer_id);
+      if (!engineer) {
+         return res.status(500).json({
+            status: "failed",
+            message: `Failed to find engineer with id ${req.body.engineer_id}`
+         })
+      }
+
+      // Delete engineer
+      await models.user.deleteOne({ _id: req.body.engineer_id })
+         .then(() => {
+            res.status(200).json({
+               status: 'success',
+               message: 'Application deleted successfully',
+            });
+         }).catch((err) => {
+            return res.status(500).json({
+               status: "failed",
+               message: `Failed to delete engineer: ` + err
+            })
+         });
+
    } catch (error) {
       res.status(500).json({
          status: "failed",
-         message: `Failed to find student: ` + error
+         message: `Failed to delete engineer: ` + error
       })
    }
-   next();
 }
 
-const getCompanyDetails = async (req, res, next) => {
-   let company;
+//get Engineer details
+const getEngineerDetails = async (req, res, next) => {
    try {
-      if (!req.body.company_id && req.user.role == "company") {
-         company = await models.company.findById(req.user.id)
-         if (company) {
-            res
-               .status(200)
-               .json({
-                  status: "success",
-                  message: "Company details",
-                  company: company
-               })
-         } else {
-            res
-               .status(404).json({
-                  status: "failed",
-                  message: `Failed to find company with id ${req.user.id}`
-               })
-         }
-      } else {
-
+      if (req.user.role === "admin") {
          //check for id validation
-         if (req.body.company_id.length !== 24) {
+         if (!req.body.engineer_id || req.body.engineer_id.length !== 24) {
+            console.log("Invalid engineer id provided.");
             return IdValidation(res);
          }
+         // Access engineerId from request body
+         const engineerId = req.body.engineer_id;
 
-         // Access studentId from request body
-         const companyId = req.body.company_id;
-
-         company = await models.company.findById(companyId)
-         if (company) {
-            res
-               .status(200)
-               .json({
-                  status: "success",
-                  message: "company details",
-                  company: company
-               })
-         } else {
-            res
-               .status(404).json({
-                  status: "failed",
-                  message: `Failed to find company with id: ${companyId}`
-               })
+         let engineer = await models.user.findById(engineerId);
+         if (!engineer) {
+            console.log("Engineer not found");
+            return res.status(500).json(RESPONSES.USER.GET_DETAILS_FAILED)
          }
+         let response = { ...RESPONSES.USER.GET_DETAILS_SUCCESS, engineer }
+         res.status(200)
+            .json(response);
+      } else {
+         let engineer = await models.user.findById(req.user.id);
+         let response = { ...RESPONSES.USER.GET_DETAILS_SUCCESS, engineer }
+         return res.status(200)
+            .json(response)
       }
    } catch (error) {
-      res
-         .status(400).json({
-            status: "failed",
-            message: `Failed to find company: ${error}`
-         })
+      res.status(500).json(RESPONSES.USER.GET_DETAILS_FAILED)
    }
    next();
 }
-
 
 const deleteUser = async (req, res, next) => {
 
-   // Check if the refRole is valid
-   if (!req.body.refRole || !["engineer", "student", "company"].includes(req.body.refRole)) {
-      return res.status(500).json({
-         status: "failed",
-         message: "Invalid reference Role",
-      });
-   }
-
-   // Assuming the refRole value is provided in the request body
-   const refRole = req.body.refRole;
-
-   // Check if an engineer is trying to delete an engineer or a company
-   if (req.user.role === "engineer" && ["engineer", "company"].includes(refRole)) {
-      return sendReferenceError(500, res, "Not authorized roles to access this route");
-   }
 
    //check for id validation
    if (!req.body.userId || req.body.userId.length !== 24) {
@@ -227,39 +160,32 @@ const deleteUser = async (req, res, next) => {
    }
 
    let userId = req.body.userId;
-   let user;
-   let userModel;
 
-   // Determine the appropriate model based on the refRole
-   switch (refRole) {
-      case "engineer":
-         userModel = models.engineer;
-         break;
-      case "student":
-         userModel = models.student;
-         break;
-      case "company":
-         userModel = models.company;
-         break;
-      case "job":
-         userModel = models.job;
-         break;
-      case "jobApplication":
-         userModel = models.jobApplications;
-         break;
+   let user = await isUserExist(userId);
+   if (!user) {
+      return res.status(401)
+         .json({
+            "status": "failed",
+            "message": "User does not exist"
+         })
    }
 
-   // Find the user by userId and the appropriate model
-   user = await userModel.findById(userId);
-
    // Check if the user exists and has the same role as refRole
-   if (!user || refRole !== user.role) {
-      return sendReferenceError(500, res, "User does not exist");
+   if (user.role == Roles.ENGINEER && req.user.role == Roles.ENGINEER) {
+      return res.status(400)
+         .json({
+            "status": "failed",
+            "message": "Engineer can't delete other engineers"
+         })
    }
 
    // Delete the user
    try {
-      await userModel.deleteOne({ _id: userId })
+      if (user.role == Roles.COMPANY) {
+         await models.company.deleteOne({ _id: userId })
+      } else {
+         await models.user.deleteOne({ _id: userId })
+      }
       res
          .status(200)
          .json({
@@ -276,9 +202,9 @@ const deleteUser = async (req, res, next) => {
 };
 
 module.exports = {
-   getAllStudents,
-   getAllCompanies,
-   getStudentDetails,
-   getCompanyDetails,
    deleteUser,
+   UpdateEngineerStatus,
+   deleteEngineer,
+   getAllEngineer,
+   getEngineerDetails
 }

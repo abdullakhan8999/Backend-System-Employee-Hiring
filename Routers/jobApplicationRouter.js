@@ -18,7 +18,7 @@ const {
 
 //apply for the job
 jobApplicationRouter
-   .route('/apply/job/:role')
+   .route('/apply/job')
    .post(
       isAuthenticatedUser,
       authorizedRoles(Roles.STUDENT),
@@ -27,7 +27,7 @@ jobApplicationRouter
 
 // get all job applications
 jobApplicationRouter
-   .route('/company/job/applications/:role')
+   .route('/company/job/applications')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
@@ -36,7 +36,7 @@ jobApplicationRouter
 
 // get job applications
 jobApplicationRouter
-   .route('/company/job/application/:role')
+   .route('/company/job/application')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
@@ -45,7 +45,7 @@ jobApplicationRouter
 
 // update job applications
 jobApplicationRouter
-   .route('/company/update/jobApplication/:role')
+   .route('/company/update/jobApplication')
    .put(
       isAuthenticatedUser,
       authorizedRoles(Roles.COMPANY),
@@ -54,7 +54,7 @@ jobApplicationRouter
 
 //delete job by id
 jobApplicationRouter
-   .route('/delete/job/application/:role')
+   .route('/delete/job/application')
    .delete(
       isAuthenticatedUser,
       authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER),

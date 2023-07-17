@@ -4,7 +4,7 @@ module.exports = (data) => {
    let schema;
    if (data.role === 'company') {
       schema = Joi.object({
-         companyName: Joi.string().required(),
+         name: Joi.string().required(),
          role: Joi.string().required(),
          description: Joi.string().required(),
          location: Joi.string().required(),

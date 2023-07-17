@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 
 
 const companySchema = mongoose.Schema({
-   companyName: {
+   name: {
       type: String,
       required: true,
       minLength: [4, "Name should be more than 4 characters"],

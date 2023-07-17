@@ -1,31 +1,34 @@
 const dotenv = require('dotenv');
 const app = require('./app');
 const { connectDB } = require('./Configs/config.DB');
-const AdminModel = require('./Models/AdminModel');
-const EngineerModel = require('./Models/EngineerModel');
+const UserModel = require('./Models/UserModel');
+const rolesConstants = require('./Constants/rolesConstants');
 
 // Use dotenv file
 dotenv.config({ path: "./Configs/.env" });
 
 // Init admin
 const initAdmin = async () => {
+   //get the admin email address
    const adminEmail = process.env.ADMIN_EMAIL;
-
    try {
-      const existingAdmin = await AdminModel.findOne({ email: adminEmail });
-
+      //check if admin is already
+      const existingAdmin = await UserModel.findOne({ email: adminEmail });
       if (existingAdmin) {
          console.log("Admin already exists.");
          return;
       }
 
-      const newAdmin = new AdminModel({
-         firstName: process.env.ADMIN_FIRST_NAME,
-         lastName: process.env.ADMIN_LAST_NAME,
-         email: adminEmail,
+      // if not, create a new admin
+      const newAdmin = new UserModel({
+         name: process.env.ADMIN_NAME,
+         email: process.env.ADMIN_EMAIL,
+         userStatus: process.env.ADMIN_STATUS_APPROVED,
+         role: rolesConstants.ADMIN,
          password: process.env.ADMIN_PASSWORD
       });
 
+      // send responds
       await newAdmin.save();
       console.log("Admin is created.");
    } catch (error) {
@@ -33,32 +36,36 @@ const initAdmin = async () => {
    }
 };
 
-// Init admin
+// Init Engineer
 const initEngineer = async () => {
+   // Get engineer email address
    const engineerEmail = process.env.ENGINEER_EMAIL;
-
    try {
-      const existingEngineer = await EngineerModel.findOne({ email: engineerEmail });
-
+      // check if engineer exists
+      const existingEngineer = await UserModel.findOne({ email: engineerEmail });
       if (existingEngineer) {
          console.log("Engineer already exists.");
          return;
       }
 
-      const newEngineer = new EngineerModel({
-         firstName: process.env.ENGINEER_FIRST_NAME,
-         lastName: process.env.ENGINEER_LAST_NAME,
+      // if not, create new engineer
+      const newEngineer = new UserModel({
+         name: process.env.ENGINEER_NAME,
          email: engineerEmail,
-         engineerStatus: process.env.ENGINEER_STATUS,
+         userStatus: process.env.ENGINEER_STATUS_APPROVED,
+         role: rolesConstants.ENGINEER,
          password: process.env.ENGINEER_PASSWORD
       });
 
+      // sending results
       await newEngineer.save();
       console.log("Engineer is created.");
    } catch (error) {
       console.error("Error creating engineer:", error);
    }
 };
+
+
 const init = async () => {
    await connectDB();
    await initAdmin();

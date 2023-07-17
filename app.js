@@ -15,13 +15,14 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 // router import
-app.use("/api/v1", require("./Routers/authRouter"));
 app.use("/api/v1", require("./Routers/adminRouter"));
-app.use("/api/v1", require("./Routers/engineerRouter"));
+app.use("/api/v1", routers.authRouter);
 app.use("/api/v1", routers.jobRouter);
 app.use("/api/v1", routers.jobApplicationRouter);
 app.use("/api/v1", routers.ticketRouter);
 app.use("/api/v1", routers.userRouter);
+app.use("/api/v1", routers.studentRouter);
+app.use("/api/v1", routers.companyRouter);
 
 
 

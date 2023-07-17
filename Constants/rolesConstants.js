@@ -14,7 +14,6 @@ module.exports.Roles = { ADMIN, STUDENT, COMPANY, ENGINEER };
 module.exports.userStatus = {
    PENDING: "pending",
    APPROVED: "approved",
-   REJECTED: "rejected",
 };
 module.exports.engineerStatus = {
    pending: "PENDING",

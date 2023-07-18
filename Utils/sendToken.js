@@ -1,6 +1,6 @@
 const RESPONSES = require("../Constants/RESPONSES");
 
-const sendToken = async (user, statusCode, res) => {
+const sendToken = async (user, statusCode, res, isSignUp) => {
   try {
     const token = await user.getJwtToken();
 
@@ -16,9 +16,17 @@ const sendToken = async (user, statusCode, res) => {
     // resolve response depending on user
     let response;
     if (user.role === "company") {
-      response = { ...RESPONSES.COMPANY.CREATE_SUCCESS, user, token };
+      if (isSignUp) {
+        response = { ...RESPONSES.COMPANY.CREATE_SUCCESS, user, token };
+      } else {
+        response = { ...RESPONSES.COMPANY.LOGIN_SUCCESS, user, token };
+      }
     } else {
-      response = { ...RESPONSES.USER.CREATE_SUCCESS, user, token };
+      if (isSignUp) {
+        response = { ...RESPONSES.USER.CREATE_SUCCESS, user, token };
+      } else {
+        response = { ...RESPONSES.USER.LOGOUT_SUCCESS, user, token };
+      }
     }
     // console.log(response);
     res.status(statusCode).cookie("token", token, options).json(response);

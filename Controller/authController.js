@@ -149,6 +149,30 @@ const logout = async (req, res, next) => {
    }
 };
 
+const getUserDetails = async (req, res, next) => {
+   //when user login user id is fetched to req so using auth
+   const UserId = req.user.id;
+   let user;
+   if (req.user.role == "company") {
+      user = await models.company.findById(UserId);
+      if (!user) return res.status(404).json({
+         status: failed,
+         message: "Please Login to access this rearouse."
+      });
+   } else {
+      user = await models.user.findById(UserId);
+      if (!user) return res.status(404).json({
+         status: failed,
+         message: "Please Login to access this rearouse."
+      });
+   }
+
+   res.status(200).json({
+      status: "success",
+      user,
+   });
+}
+
 // Update user details
 const UpdateUserDetails = async (req, res, next) => {
 
@@ -296,5 +320,6 @@ module.exports = {
    login,
    logout,
    UpdateUserDetails,
-   UpdateUserPassword
+   UpdateUserPassword,
+   getUserDetails
 };

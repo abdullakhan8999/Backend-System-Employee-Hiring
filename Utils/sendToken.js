@@ -1,6 +1,6 @@
 const RESPONSES = require("../Constants/RESPONSES");
 
-const sendToken = async (user, statusCode, res, isSignUp) => {
+const sendToken = async (user, statusCode, res) => {
   try {
     const token = await user.getJwtToken();
 
@@ -10,23 +10,14 @@ const sendToken = async (user, statusCode, res, isSignUp) => {
         Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
       ),
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
     };
 
     // resolve response depending on user
     let response;
     if (user.role === "company") {
-      if (isSignUp) {
-        response = { ...RESPONSES.COMPANY.CREATE_SUCCESS, user, token };
-      } else {
-        response = { ...RESPONSES.COMPANY.LOGIN_SUCCESS, user, token };
-      }
+      response = { ...RESPONSES.COMPANY.CREATE_SUCCESS, user, token };
     } else {
-      if (isSignUp) {
-        response = { ...RESPONSES.USER.CREATE_SUCCESS, user, token };
-      } else {
-        response = { ...RESPONSES.USER.LOGOUT_SUCCESS, user, token };
-      }
+      response = { ...RESPONSES.USER.CREATE_SUCCESS, user, token };
     }
     // console.log(response);
     res.status(statusCode).cookie("token", token, options).json(response);

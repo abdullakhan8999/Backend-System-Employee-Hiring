@@ -77,10 +77,8 @@ const SignUp = async (req, res, next) => {
          let userObject = {
             name: req.body.name,
             email: req.body.email,
-            password: req.body.password
-         }
-         if (req.body.role) {
-            userObject.role = req.body.role;
+            password: req.body.password,
+            role: req.body.role
          }
          // if role other than student then user status pending
          if (req.body.role == "student") {

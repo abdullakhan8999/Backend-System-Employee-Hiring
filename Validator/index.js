@@ -1,6 +1,7 @@
 module.exports.isEmailExist = require('./isEmailExist')
-module.exports.isUserExist = require('./isUserExist')
 module.exports.ValidateSignUp = require('./ValidateSignUp')
+
+module.exports.isUserExist = require('./isUserExist')
 module.exports.ValidateSignIn = require('./ValidateSignIn')
 module.exports.ValidateJob = require('./ValidateJob')
 module.exports.ValidateUpdateUserDetails = require('./ValidateUpdateUserDetails')

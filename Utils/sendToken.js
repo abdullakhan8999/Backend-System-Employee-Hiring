@@ -1,17 +1,18 @@
 const RESPONSES = require("../Constants/RESPONSES");
 
-const sendToken = (user, statusCode, res) => {
-  const token = user.getJwtToken();
+const sendToken = async (user, statusCode = 200, res) => {
+  const token = await user.getJwtToken();
 
   // options for cookie
   const options = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+      Date.now() + 5 * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
   };
 
-  res.status(statusCode).cookie("token", token, options).json({
+  res.cookie("token", token, options).status(statusCode).json({
     success: true,
     user,
     token,

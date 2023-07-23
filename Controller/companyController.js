@@ -53,14 +53,14 @@ const getCompanyDetails = async (req, res, next) => {
    let company;
    try {
       //user role is company 
-      if (!req.body.company_id && req.user.role == "company") {
+      if (req.user.role == "company" && !req.body.company_id) {
          company = await models.company.findById(req.user.id)
          let response = { ...RESPONSES.COMPANY.GET_DETAILS_SUCCESS, company }
          res.status(200)
             .json(response)
       } else {
          //check for id validation
-         if (req.body.company_id.length !== 24) {
+         if (req.body.company_id == undefined || req.body.company_id.length !== 24) {
             console.log("Company id validation failed");
             return IdValidation(res);
          }

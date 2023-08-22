@@ -11,7 +11,8 @@ const {
    getAllApplication,
    getApplicationId,
    updateApplicationStatus,
-   deleteApplicationById
+   deleteApplicationById,
+   deleteMyApplication
 } = require("../Controller/JobApplicationController")
 
 
@@ -25,6 +26,7 @@ jobApplicationRouter
       applyForJob
    );
 
+
 // get all job applications
 jobApplicationRouter
    .route('/company/job/applications')
@@ -36,7 +38,7 @@ jobApplicationRouter
 
 // get job applications
 jobApplicationRouter
-   .route('/company/job/application')
+   .route('/company/job/application/:application_id')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
@@ -54,11 +56,20 @@ jobApplicationRouter
 
 //delete job by id
 jobApplicationRouter
-   .route('/delete/job/application')
+   .route('/delete/job/application/:application_id')
    .delete(
       isAuthenticatedUser,
-      authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER),
+      authorizedRoles(Roles.COMPANY),
       deleteApplicationById
+   );
+
+//delete My Application 
+jobApplicationRouter
+   .route('/delete/myJob/application/:job_id',)
+   .delete(
+      isAuthenticatedUser,
+      authorizedRoles(Roles.STUDENT),
+      deleteMyApplication
    );
 
 module.exports = jobApplicationRouter;

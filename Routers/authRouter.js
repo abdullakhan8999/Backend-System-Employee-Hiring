@@ -15,7 +15,7 @@ authRouter.route('/me').get(isAuthenticatedUser, getUserDetails);
 authRouter.route('/update/details')
    .put(
       isAuthenticatedUser,
-      authorizedRoles(Roles.ENGINEER, Roles.STUDENT, Roles.COMPANY),
+      authorizedRoles(Roles.ENGINEER, Roles.ADMIN, Roles.STUDENT, Roles.COMPANY),
       UpdateUserDetails
    );
 

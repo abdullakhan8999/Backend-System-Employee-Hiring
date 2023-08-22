@@ -10,6 +10,9 @@ module.exports = (data) => {
          location: Joi.string().required(),
          email: Joi.string().required(),
          password: Joi.string().required(),
+         companySize: Joi.number().required(),
+         companyCategories: Joi.array().items(Joi.string()).required(),
+         companyDepartments: Joi.array().items(Joi.string()).required(),
       })
    } else {
       schema = Joi.object({

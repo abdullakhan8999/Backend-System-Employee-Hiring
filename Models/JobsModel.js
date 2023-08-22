@@ -7,6 +7,10 @@ const jobSchema = mongoose.Schema({
       required: true,
       minLength: [4, "Name should be more than 4 characters"],
    },
+   department: {
+      type: String,
+      required: true,
+   },
    description: {
       type: String,
       required: true,

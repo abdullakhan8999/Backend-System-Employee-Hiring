@@ -11,6 +11,10 @@ const companySchema = mongoose.Schema({
       required: true,
       minLength: [4, "Name should be more than 4 characters"],
    },
+   role: {
+      type: String,
+      default: Constants.COMPANY,
+   },
    description: {
       type: String,
       required: true,
@@ -35,9 +39,23 @@ const companySchema = mongoose.Schema({
       maxLength: [30, "Password should be less than 30 characters"],
       select: false,
    },
-   role: {
+   companyCategories: {
+      type: [String],
+      required: true,
+      default: ["Startup"],
+   },
+   companyDepartments: {
+      type: [String],
+      required: true,
+   },
+   companySize: {
       type: String,
-      default: Constants.COMPANY,
+      required: true,
+      default: 50,
+   },
+   jobLocations: {
+      type: [String],
+      required: true,
    },
    jobs: [
       {

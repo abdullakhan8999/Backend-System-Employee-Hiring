@@ -56,14 +56,14 @@ const getAllEngineer = async (req, res, next) => {
       let engineers
       // Check if there is not query parameters
       if (Object.keys(req.query).length === 0) {
-         engineers = await models.user.find().exec();
+         engineers = await models.user.find({ role: "engineer" }).exec();
          let results = engineers.length;
          let response = { ...RESPONSES.USER.GET_ALL_SUCCESS, results, engineers }
          return res.status(200).json(response);
       }
 
       // else return query results
-      const apiFeatures = new ApiFeatures(models.user.find(), req.query)
+      const apiFeatures = new ApiFeatures(models.user.find({ role: "engineer" }), req.query)
          .searchByUserStatus()
          .searchByEmail()
          .searchByRole()
@@ -83,22 +83,22 @@ const getAllEngineer = async (req, res, next) => {
 //Delete Engineer 
 const deleteEngineer = async (req, res, next) => {
    //check for id validation
-   if (!req.body.engineer_id || req.body.engineer_id.length !== 24) {
+   if (!req.params.engineer_id || req.params.engineer_id.length !== 24) {
       return IdValidation(res);
    }
 
    try {
       //find the engineer
-      let engineer = await models.user.findById(req.body.engineer_id);
+      let engineer = await models.user.findById(req.params.engineer_id);
       if (!engineer) {
          return res.status(500).json({
             status: "failed",
-            message: `Failed to find engineer with id ${req.body.engineer_id}`
+            message: `Failed to find engineer with id ${req.params.engineer_id}`
          })
       }
 
       // Delete engineer
-      await models.user.deleteOne({ _id: req.body.engineer_id })
+      await models.user.deleteOne({ _id: req.params.engineer_id })
          .then(() => {
             res.status(200).json({
                status: 'success',
@@ -155,11 +155,11 @@ const deleteUser = async (req, res, next) => {
 
 
    //check for id validation
-   if (!req.body.userId || req.body.userId.length !== 24) {
+   if (!req.params.userId || req.params.userId.length !== 24) {
       return IdValidation(res);
    }
 
-   let userId = req.body.userId;
+   let userId = req.params.userId;
 
    let user = await isUserExist(userId);
    if (!user) {
@@ -190,7 +190,7 @@ const deleteUser = async (req, res, next) => {
          .status(200)
          .json({
             status: 'success',
-            "message": "User deleted successfully"
+            message: "User deleted successfully"
          })
    } catch (err) {
       res.status(400)

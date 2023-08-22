@@ -12,6 +12,7 @@ const {
    getJobDetailsId,
    updateJobDetailsId,
    deleteJobById,
+   getAllJobsByTitle,
 } = require("../Controller/jobController")
 
 //Job
@@ -34,9 +35,18 @@ jobRouter
       getAllJobs
    );
 
+//get jobs by title
+jobRouter
+   .route('/search/jobs')
+   .get(
+      isAuthenticatedUser,
+      authorizedRoles(...Object.values(Roles)),
+      getAllJobsByTitle
+   );
+
 //get job by id
 jobRouter
-   .route('/job_id')
+   .route('/job/:jobId')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
@@ -54,7 +64,7 @@ jobRouter
 
 //delete job by id
 jobRouter
-   .route('/company/delete/job')
+   .route('/company/delete/job/:jobId')
    .delete(
       isAuthenticatedUser,
       authorizedRoles(Roles.ADMIN, Roles.COMPANY),

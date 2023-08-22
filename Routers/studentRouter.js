@@ -15,10 +15,13 @@ const {
 
 
 studentRouter.route('/admin/students')
-   .get(isAuthenticatedUser, authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER), getAllStudents);
+   .get(isAuthenticatedUser,
+      authorizedRoles(Roles.ADMIN, Roles.COMPANY, Roles.ENGINEER),
+      getAllStudents
+   );
 
 
-studentRouter.route('/student/details')
+studentRouter.route('/student/details/:student_id')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),

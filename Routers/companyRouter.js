@@ -7,13 +7,20 @@ const { isAuthenticatedUser, authorizedRoles } = require("../Middleware/auth");
 const {
    getAllCompanies,
    getCompanyDetails,
+   getAllCompaniesByName,
 } = require("../Controller/companyController");
 
-companyRouter.route('/company/details')
+companyRouter.route('/company/details/:company_id')
    .get(
       isAuthenticatedUser,
       authorizedRoles(...Object.values(Roles)),
       getCompanyDetails);
+
+companyRouter.route('/search/companies')
+   .get(
+      isAuthenticatedUser,
+      authorizedRoles(...Object.values(Roles)),
+      getAllCompaniesByName);
 
 companyRouter
    .route('/companies')

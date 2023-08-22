@@ -7,6 +7,7 @@ module.exports = (data) => {
       location: Joi.string().min(4).required(),
       requirement: Joi.array().items(Joi.string()).min(1).required(),
       experience: Joi.string().required(),
+      department: Joi.string().required(),
       salary: Joi.string().required(),
       hiring_status: Joi.string().required(),
       vacancies: Joi.number().min(1).required(),

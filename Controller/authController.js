@@ -41,7 +41,6 @@ const SignUp = async (req, res, next) => {
 
       //if requested user is company 
       if (req.body.role == "company") {
-
          //request company body validation
          let { error } = await Validator.ValidateSignUp(req.body);
          if (error) {
@@ -55,7 +54,10 @@ const SignUp = async (req, res, next) => {
             description: req.body.description,
             email: req.body.email,
             location: req.body.location,
-            password: req.body.password
+            password: req.body.password,
+            companySize: req.body.companySize,
+            companyCategories: req.body.companyCategories,
+            companyDepartments: req.body.companyDepartments
          })
             .then((company) => {
                // console.log("Company created:", company);
@@ -232,16 +234,18 @@ const UpdateUserDetails = async (req, res, next) => {
          }
 
          //validate email
-         const isEmailExist = await Validator.isEmailExist(req.body.email);
-         if (isEmailExist) {
-            return res.status(400).json({
-               status: "failed",
-               message: 'The email is already in use by another account.',
-            });
+         if (req.user.email != req.body.email) {
+            const isEmailExist = await Validator.isEmailExist(req.body.email);
+            if (isEmailExist) {
+               return res.status(400).json({
+                  status: "failed",
+                  message: 'The email is already in use by another account.',
+               });
+            }
          }
 
-         user.name = req.body.name ? req.body.name : user.name
-         user.email = req.body.email ? req.body.email : user.email
+         user.name = req.body.name || user.name
+         user.email = req.body.email || user.email
          await user.save();
 
          // sending updated results

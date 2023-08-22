@@ -16,6 +16,10 @@ const jobApplicationsSchema = mongoose.Schema({
       type: String,
       required: true,
    },
+   company_name: {
+      type: String,
+      required: true,
+   },
    applicationStatus: {
       type: String,
       default: 'Pending'

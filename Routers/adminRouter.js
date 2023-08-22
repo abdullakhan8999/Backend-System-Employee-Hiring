@@ -33,18 +33,14 @@ adminRouter
       UpdateEngineerStatus
    )
 
-
-
-
-
-adminRouter.route('/delete/user')
+adminRouter.route('/delete/user/:userId')
    .delete(
       isAuthenticatedUser,
       authorizedRoles(Roles.ADMIN, Roles.ENGINEER),
       deleteUser
    );
 
-adminRouter.route('/admin/delete/engineer/')
+adminRouter.route('/admin/delete/engineer/:')
    .delete(
       isAuthenticatedUser,
       authorizedRoles(Roles.ADMIN),

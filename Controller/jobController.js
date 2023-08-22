@@ -26,6 +26,7 @@ const createJob = async (req, res, next) => {
       requirement,
       experience,
       salary,
+      department,
       vacancies,
       hiring_status
    } = req.body;
@@ -66,6 +67,7 @@ const createJob = async (req, res, next) => {
          location,
          requirement,
          experience,
+         department,
          salary,
          vacancies,
          hiring_status
@@ -73,6 +75,7 @@ const createJob = async (req, res, next) => {
 
       // save job id in company model
       isCompany.jobs.push(job._id);
+      isCompany.jobLocations.push(location);
       await isCompany.save();
 
       //response
@@ -98,14 +101,26 @@ const getAllJobs = async (req, res, next) => {
 
       // else return query results
       const apiFeatures = new ApiFeatures(models.job.find(), req.query)
-         .searchByTitle()
-         .searchByCompany_name()
-         .searchByLocation()
-         .filterByExperience()
-         .filterBySalary();
+         .searchJob()
+         .filterByExperience();
 
       const jobs = await apiFeatures.query.exec();
 
+      let results = jobs.length;
+      let response = { ...RESPONSES.JOB.GET_ALL_SUCCESS, results, jobs }
+      res.status(200).json(response);
+   } catch (error) {
+      console.log("Error while getting jobs", error);
+      res.status(500).json(RESPONSES.JOB.GET_ALL_FAILED);
+   }
+};
+
+// get All Jobs By Title
+const getAllJobsByTitle = async (req, res, next) => {
+   try {
+      const apiFeature = new ApiFeatures(models.job.find(), req.query)
+         .searchInByTitle()
+      let jobs = await apiFeature.query;
       let results = jobs.length;
       let response = { ...RESPONSES.JOB.GET_ALL_SUCCESS, results, jobs }
       res.status(200).json(response);
@@ -119,13 +134,13 @@ const getAllJobs = async (req, res, next) => {
 const getJobDetailsId = async (req, res, next) => {
    try {
       //check for id validation
-      if (!req.body.jobId || req.body.jobId.length !== 24) {
-         console.log("Invalid job id", req.body.jobId);
+      if (!req.params.jobId || req.params.jobId.length !== 24) {
+         console.log("Invalid job id", req.params.jobId);
          return IdValidation(res);
       }
 
       // access job id from request body
-      const { jobId } = req.body;
+      const jobId = req.params.jobId
 
       // find job by jobId
       let job = await models.job.findById(jobId);
@@ -181,7 +196,7 @@ const updateJobDetailsId = async (req, res, next) => {
 
 
       // filter out valid fields
-      let fields = ["jobId", "title", "description", "location", "vacancies", "requirement", "experience", "salary"]
+      let fields = ["jobId", "title", "description", "hiring_status", "department", "location", "vacancies", "requirement", "experience", "salary"]
       const invalidFields = Object.keys(req.body).filter(key => !fields.includes(key));
       // invalidField has any invalid fields
       if (invalidFields.length > 0) {
@@ -198,14 +213,10 @@ const updateJobDetailsId = async (req, res, next) => {
       job.requirement = req.body.requirement ? req.body.requirement : job.requirement;
       job.experience = req.body.experience ? req.body.experience : job.experience;
       job.salary = req.body.salary ? req.body.salary : job.salary;
+      job.department = req.body.department ? req.body.department : job.department;
+      job.vacancies = req.body.vacancies ? req.body.vacancies : job.vacancies;
+      job.hiring_status = req.body.hiring_status ? req.body.hiring_status : job.hiring_status;
 
-      if (req.body.vacancies <= 0) {
-         job.vacancies = 0;
-         job.hiring_status = JOB_STATUSES.Hiring_Status_Closed
-      } else {
-         job.vacancies = req.body.vacancies;
-         job.hiring_status = JOB_STATUSES.Hiring_Status_Open
-      }
 
       await job.save();
       res.status(200).json({
@@ -221,16 +232,12 @@ const updateJobDetailsId = async (req, res, next) => {
    };
 }
 
+// delete jobs by ID
 const deleteJobById = async (req, res, next) => {
    // Delete job
    try {
-      //check for id validation
-      if (!req.body.jobId || req.body.jobId.length !== 24) {
-         return IdValidation(res);
-      }
-
       // Find job with job id
-      const job = await models.job.findById(req.body.jobId);
+      const job = await models.job.findById(req.params.jobId);
       // if Job not found
       if (!job) {
          return res.status(404).json({
@@ -249,15 +256,25 @@ const deleteJobById = async (req, res, next) => {
       }
 
       // let isJobExist = company.jobs.some((job) => job === req.body._id)
-      let isJobExist = company.jobs.includes(req.body.jobId);
+      let isJobExist = company.jobs.includes(req.params.jobId);
       if (!isJobExist) {
          return res.status(400).json({
             status: "failed",
             message: "Not authorized roles to access this route"
          });
       }
+      // Remove the job ID from the company's jobs array
+      company.jobs = company.jobs.filter((id) => {
+         return id.toString() !== req.params.jobId;
+      });
 
-
+      const updatedLocations = [...company.jobLocations];
+      if (updatedLocations.length > 1) {
+         updatedLocations.pop();
+         company.jobLocations = updatedLocations;
+      }
+      await company.save();
+      await company.save()
       await models.job.deleteOne({ _id: job._id });
 
       // Update job applications
@@ -291,4 +308,5 @@ module.exports = {
    getJobDetailsId,
    updateJobDetailsId,
    deleteJobById,
+   getAllJobsByTitle
 }

@@ -9,7 +9,7 @@ const getAllStudents = async (req, res, next) => {
    let students;
    // Check if there are no query parameters, and return all jobs
    if (Object.keys(req.query).length === 0) {
-      students = await models.user.find();
+      students = await models.user.find({ role: "student" });
       return res.status(200).json({
          status: 'success',
          message: "All students.",
@@ -32,7 +32,7 @@ const getAllStudents = async (req, res, next) => {
    }
 
    // Request query
-   const apiFeatures = new ApiFeatures(models.user.find(), req.query)
+   const apiFeatures = new ApiFeatures(models.user.find({ role: "student" }), req.query)
       .searchByName()
       .searchByEmail()
 
@@ -63,12 +63,12 @@ const getStudentDetails = async (req, res, next) => {
             })
       } else {
          //check for id validation
-         if (!req.body.student_id || req.body.student_id.length !== 24) {
+         if (!req.params.student_id || req.params.student_id.length !== 24) {
             return IdValidation(res);
          }
 
          // Access studentId from request body
-         const studentId = req.body.student_id;
+         const studentId = req.params.student_id;
 
          student = await models.user.findById(studentId);
          if (!student) {

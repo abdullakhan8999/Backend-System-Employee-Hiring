@@ -58,6 +58,7 @@ const applyForJob = async (req, res, next) => {
    const jobApplication = await models.jobApplications.create({
       job_id,
       student_id,
+      company_name: job.company_name,
       title: job.title
    });
 
@@ -100,6 +101,7 @@ const getAllApplication = async (req, res, next) => {
       const apiFeatures = new ApiFeatures(models.jobApplications.find({ student_id: req.user.id }), req.query)
          .searchByApplicationStatus()
          .searchByTitle()
+         .searchByCompany_name()
 
       applications = await apiFeatures.query.exec();
 
@@ -107,10 +109,9 @@ const getAllApplication = async (req, res, next) => {
          .json({
             status: 'success',
             results: applications.length,
-            data: applications
+            applications
          })
    } else {
-
       // Check if there is not query parameters
       if (Object.keys(req.query).length === 0) {
          const applications = await models.jobApplications.find().exec();
@@ -131,6 +132,7 @@ const getAllApplication = async (req, res, next) => {
          .searchByApplicationStatus()
          .searchByTitle()
          .searchByStudentId()
+         .searchByCompany_name()
 
       applications = await apiFeatures.query.exec();
 
@@ -139,15 +141,16 @@ const getAllApplication = async (req, res, next) => {
          .json({
             status: 'success',
             results: applications.length,
-            data: applications
+            applications
          })
    }
 }
 
+
 const getApplicationId = async (req, res, next) => {
 
    //check for id validation
-   if (!req.body.application_id || req.body.application_id.length !== 24) {
+   if (!req.params.application_id || req.params.application_id.length !== 24) {
       return IdValidation(res);
    }
 
@@ -155,7 +158,7 @@ const getApplicationId = async (req, res, next) => {
    let application;
    if (req.user.role == "student") {
       //getting the application
-      application = await models.jobApplications.findById(req.body.application_id);
+      application = await models.jobApplications.findById(req.params.application_id);
 
       // checking the application is available or not
       if (!application) {
@@ -172,16 +175,9 @@ const getApplicationId = async (req, res, next) => {
             message: "Not authorized roles to access."
          });
       }
-
-      // send response
-      res.status(200)
-         .json({
-            status: 'success',
-            data: application
-         })
    } else {
       // Get application
-      application = await models.jobApplications.findById(req.body.application_id);
+      application = await models.jobApplications.findById(req.params.application_id);
       if (!application) {
          return res.status(404).json({
             status: "Failed",
@@ -189,13 +185,13 @@ const getApplicationId = async (req, res, next) => {
          });
       };
 
-      // send response
-      res.status(200)
-         .json({
-            status: 'success',
-            data: application
-         })
    }
+   // send response
+   res.status(200)
+      .json({
+         status: 'success',
+         application
+      })
 }
 
 const updateApplicationStatus = async (req, res, next) => {
@@ -250,7 +246,7 @@ const updateApplicationStatus = async (req, res, next) => {
          .json({
             status: 'success',
             message: 'Application updated successfully',
-            data: application
+            application
          })
    } catch (err) {
       return res.status(404).json({
@@ -263,13 +259,13 @@ const updateApplicationStatus = async (req, res, next) => {
 // delete Job by Id
 const deleteApplicationById = async (req, res, next) => {
    //check for id validation
-   if (!req.body.application_id || req.body.application_id.length !== 24) {
+   if (!req.params.application_id || req.params.application_id.length !== 24) {
       return IdValidation(res);
    }
 
    try {
       //Check for application
-      let application = await models.jobApplications.findById(req.body.application_id);
+      let application = await models.jobApplications.findById(req.params.application_id);
       if (!application) {
          return res.status(404).json({
             status: "Failed",
@@ -278,20 +274,30 @@ const deleteApplicationById = async (req, res, next) => {
       };
 
       //Delete the job application
-      await models.jobApplications.deleteOne({ _id: req.body.application_id })
+      await models.jobApplications.deleteOne({ _id: req.params.application_id })
          .then(async () => {
             let jobId = await application.job_id.toString()
             let job = await models.job.findById(jobId);
             // Apply filter condition job 
             let filteredApplications = await job.jobApplications.filter((JOB) => {
-               return JOB.toString() !== req.body.application_id;
+               return JOB.toString() !== req.params.application_id;
             });
             job.jobApplications = filteredApplications;
             // // Save the updated job document
             await job.save();
 
+            const company = await models.company.findById(job.company_id);
+            let filteredApplicationsCompany = await company.jobApplications.filter((JOB) => {
+               return JOB.toString() !== application._id;
+            }
+            );
+            company.jobApplications = filteredApplicationsCompany;
+            // // Save the updated company document
+            await company.save();
+
             let studentId = await application.student_id.toString();
             let student = await models.user.findById(studentId);
+
             // Apply filter condition student
             let filStuJobApp = await student.appliedJobs.filter((JOB) => {
                return JOB.toString() !== jobId;
@@ -305,6 +311,77 @@ const deleteApplicationById = async (req, res, next) => {
                message: "Internal error:" + err,
             });
          });
+
+      //Deleted successfully
+      return res.status(200).json({
+         status: 'success',
+         message: 'Job deleted successfully'
+      })
+   } catch (err) {
+      return res.status(500).json({
+         status: "failed",
+         message: "Internal error:" + err,
+      });
+   }
+}
+
+// delete Job by Id
+const deleteMyApplication = async (req, res, next) => {
+   //check for id validation
+   if (!req.params.job_id || req.params.job_id.length !== 24) {
+      return IdValidation(res);
+   }
+   const job_id = req.params.job_id;
+   try {
+      //Check for application
+      reqBody = {
+         job_id,
+         student_id: req.user._id
+      }
+
+      let applications = await models.jobApplications.find(reqBody);
+      if (!applications) {
+         return res.status(404).json({
+            status: "Failed",
+            message: "Application not found.",
+         });
+      };
+
+      //Delete the job applications
+      applications.forEach(async (application) => {
+         await models.jobApplications.deleteOne({ _id: application._id })
+            .then(async () => {
+               let job = await models.job.findById(job_id);
+
+               // Apply filter condition job 
+               let filteredApplications = await job.jobApplications.filter((JobApplicationId) => {
+                  return JobApplicationId.toString() !== application._id.toString();
+               });
+               job.jobApplications = filteredApplications;
+
+               const company = await models.company.findById(job.company_id.toString());
+               let filteredApplicationsCompany = await company.jobApplications.filter((JOB) => {
+                  return JOB.toString() !== application._id.toString();
+               }
+               );
+               company.jobApplications = filteredApplicationsCompany;
+
+
+               // Apply filter condition to user's appliedJobs
+               req.user.appliedJobs = req.user.appliedJobs.filter(JOB => JOB.toString() !== job_id);
+
+               //  Save the updated job document, user document and company document
+               await company.save();
+               await job.save();
+               await req.user.save();
+            }).catch((err) => {
+               return res.status(500).json({
+                  status: "failed",
+                  message: "Internal error:" + err,
+               });
+            });
+      });
+
 
       //Deleted successfully
       res.status(200).json({
@@ -324,5 +401,6 @@ module.exports = {
    getAllApplication,
    getApplicationId,
    updateApplicationStatus,
-   deleteApplicationById
+   deleteApplicationById,
+   deleteMyApplication
 }

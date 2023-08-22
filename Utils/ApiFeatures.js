@@ -4,15 +4,74 @@ class ApiFeatures {
       this.queryStr = queryStr;
    }
 
-   searchByTitle() {
-      if (this.queryStr.title) {
-         const title = {
-            title: {
-               $regex: this.queryStr.title,
+   searchJob() {
+      if (this.queryStr.keyword) {
+         const keyword = this.queryStr.keyword;
+         this.query = this.query.find({
+            $or: [
+               { title: { $regex: keyword, $options: "i" } },
+               { department: { $regex: keyword, $options: "i" } },
+               { hiring_status: { $regex: keyword, $options: "i" } },
+               { company_name: { $regex: keyword, $options: "i" } },
+               { location: { $regex: keyword, $options: "i" } },
+               { requirements: { $elemMatch: { $regex: keyword, $options: "i" } } },
+               { salary: { $regex: keyword, $options: "i" } }
+            ]
+         });
+      }
+      return this;
+   }
+   searchCompany() {
+      if (this.queryStr.keyword) {
+         const keyword = this.queryStr.keyword;
+         this.query = this.query.find({
+            $or: [
+               { name: { $regex: keyword, $options: "i" } },
+               { location: { $regex: keyword, $options: "i" } },
+               { title: { $regex: keyword, $options: "i" } },
+               { companyCategories: { $elemMatch: { $regex: keyword, $options: "i" } } },
+               { companyDepartments: { $elemMatch: { $regex: keyword, $options: "i" } } },
+               { department: { $regex: keyword, $options: "i" } },
+            ]
+         });
+      }
+      return this;
+   }
+
+   searchJobApplication() {
+      if (this.queryStr.keyword) {
+         const keyword = this.queryStr.keyword;
+         this.query = this.query.find({
+            $or: [
+               { applicationStatus: { $regex: keyword, $options: "i" } },
+               { job_id: { $regex: keyword, $options: "i" } },
+            ]
+         });
+      }
+      return this;
+   }
+
+   filterByExperience() {
+      if (this.queryStr.experience) {
+         const experience = {
+            experience: {
+               $regex: this.queryStr.experience,
                $options: "i",
             },
          }
-         this.query = this.query.find({ ...title });
+         this.query = this.query.find({ ...experience });
+      }
+      return this;
+   }
+
+   filterByCompanyCategories() {
+      if (this.queryStr.companyCategories) {
+         const companyCategories = {
+            companyCategories: {
+               $regex: new RegExp(this.queryStr.companyCategories, "i"),
+            },
+         };
+         this.query = this.query.find({ ...companyCategories });
       }
       return this;
    }
@@ -26,6 +85,19 @@ class ApiFeatures {
             },
          }
          this.query = this.query.find({ ...name });
+      }
+      return this;
+   }
+
+   searchByTitle() {
+      if (this.queryStr.title) {
+         const title = {
+            title: {
+               $regex: this.queryStr.title,
+               $options: "i",
+            },
+         }
+         this.query = this.query.find({ ...title });
       }
       return this;
    }
@@ -56,18 +128,19 @@ class ApiFeatures {
       return this;
    }
 
-   filterByExperience() {
-      if (this.queryStr.experience) {
-         const experience = {
-            experience: {
-               $regex: this.queryStr.experience,
+   searchByDepartment() {
+      if (this.queryStr.department) {
+         const department = {
+            department: {
+               $regex: this.queryStr.department,
                $options: "i",
             },
          }
-         this.query = this.query.find({ ...experience });
+         this.query = this.query.find({ ...department });
       }
       return this;
    }
+
 
    filterBySalary() {
       if (this.queryStr.salary) {
@@ -84,6 +157,7 @@ class ApiFeatures {
 
    searchByApplicationStatus() {
       if (this.queryStr.applicationStatus) {
+         console.log(this.queryStr.applicationStatus);
          const applicationStatus = {
             applicationStatus: {
                $regex: this.queryStr.applicationStatus,
@@ -143,5 +217,30 @@ class ApiFeatures {
       }
       return this;
    }
+
+   filterByRequirement() {
+      if (this.queryStr.requirement) {
+         const requirement = {
+            requirement: {
+               $regex: new RegExp(this.queryStr.requirement, "i"),
+            },
+         };
+         this.query = this.query.find({ ...requirement });
+      }
+      return this;
+   }
+
+   filterByCompanyCategories() {
+      if (this.queryStr.companyCategories) {
+         const companyCategories = {
+            companyCategories: {
+               $regex: new RegExp(this.queryStr.companyCategories, "i"),
+            },
+         };
+         this.query = this.query.find({ ...companyCategories });
+      }
+      return this;
+   }
+
 }
 module.exports = ApiFeatures;
